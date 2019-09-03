@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8"/>
+		<script type="text/javascript" src="../src/V1.js">
+		</script>
+		<style>
+		#button {background-color:violet}
+		#wokspace {display:flex}
+		#wokspace * {height:4em;width:33%;border:solid}
+		</style>
+	</head>
+	<body>
+	  <h1> sugar cube V1 example </h1>
+		<p>
+			This is a javascript translation of  example p. 35-40 in chapter 2 of JFS thesis.
+		  To illustrate Sugar Cube V1.
+
+		</p>
+		<div id="wokspace">
+			<span id="button">READY</span>
+			<span id="msg">----</span>
+			<span id="score">----</span>
+
+		</div>
+		<p>
+		  Le jeu consiste à faire une dizaine de mesures de la rapidité avec laquelle l’utilisateur réagit à l’affichage d’un message. Le programme affiche une fenêtre à l’écran, présentant un bouton et deux champs de texte (où l’on affiche les scores ou des messages d’alerte). Au début du jeu, le bouton est vert et affiche le message "READY!". Lorsque l’utilisateur clique dans ce bouton, un essai débute. Durant un délai aléatoire, le bouton devient rouge et affiche le message "WAIT!". On dit que le bouton devient réfractaire􏰀: l’utilisateur ne doit pas cliquer durant ce délai. Puis, brutalement, le bouton retrouve une couleur verte et affiche le message "STOP!". Une mesure de l’écoulement du temps (mesuré en instants logiques de la machine d’exécution) commence. L’utilisateur doit alors réagir le plus rapidement possible en cliquant sur le bouton pour arrêter la mesure. Le résultat de la mesure est affiché. Au bout de 10 mesures, une moyenne est calculée et constitue le score définitif du joueur. Si l’utilisateur clique pendant la période réfractaire, le programme suppose que le joueur essaie de tricher en anticipant sa réaction. Il signale cela au joueur en affichant un message. Le bouton devient rouge et affiche le message "RESET!". La série de mesures est annulée. Le joueur doit cliquer sur le bouton pour démarrer une nouvelle série. Si 3 tentatives de triche sont détectées, le programme signale son mécontentement et termine.
+		</p>
+		<Script>
+
+			
+			var machine=new Machine();
+			
+			var button=document.getElementById("button");
+			var msg=document.getElementById("msg");
+			var score=document.getElementById("score");
+			
+			button.addEventListener("click", function (event) {
+			    debug('click gererated at ',machine.instant);
+			    machine.add(new Generate("click"));
+			});
+			
+                        function setText(target,txt){
+			    target.innerHTML=txt;
+			}
+
+                        function setBackground(target,color){
+			    target.style.backgroundColor=color;
+			}
+		
+		        //
+			class RandomRepeat extends Repeat{
+			    rand(){ this.counter = Math.round(Math.random()*100); 
+				    this.num =counter;
+				    debug('generating randomRepeat',this.counter);
+				  }
+			    constructor( body){
+				super(0,body);
+				this.rand();
+			    }
+			    reset(){
+				super.reset();
+				this.rand();
+			    }
+			}
+
+			class Counter {
+			    constructor(){			    
+				this.val = 0;
+				this.sum = 0;
+				this.count = 0;
+			    }
+				incVal(i) { this.val += i;
+					debug("IncVal",this.val, this.sum,this.count);
+				}
+				
+			    reset(){ this.sum=0;
+				     this.val=0;
+				     this.count=0;
+				   }
+			    value(){
+				var res = this.val;
+				this.sum += this.val;
+				this.val = 0;
+				this.count += 1;
+				return res;
+			    }
+			    average(){
+				this.sum += this.val;
+				var res = this.sum / this.count;
+				this.reset();
+				return res.toFixed(4);
+			    }
+		}
+		
+		        //
+			class DisplayMessage extends Atom{
+			    constructor( l,msg){
+				super();
+				this.l = l;
+				this.msg = msg;
+			    }
+				action( machine){
+					debug("display",this.msg);
+				setText(msg,this.msg);
+			    }
+			}
+
+
+			class SetButtonState extends Atom {
+			    constructor( b, msg,  c){
+				super();
+				this.b = b; this.msg = msg; this.c = c;
+			    }
+			    action(machine){
+				setBackground(this.b,this.c);
+				setText(this.b,this.msg);
+			    }
+			}
+
+
+			class IncrementCounter extends Atom {
+			    constructor(counter){ super();this.counter = counter; }
+			    action(machine){
+				    this.counter.incVal(1);
+				    debug("Increment: counter value = "+this.counter.value());
+			    }
+			}
+
+
+			class DisplayCounterValue extends Atom{
+			    
+			    constructor(counter){ super();this.counter = counter; }
+			    action(machine){
+				debug("mesure = "+this.counter.value());
+			    }
+			}
+						
+			class ResetCounter extends Atom	{
+			    
+			    constructor(counter){super(counter); this.counter = counter; }
+			    action(machine){
+				this.counter.reset();
+			    }
+			}
+						
+						
+			class DisplayCounterAverage extends Atom{
+				constructor(counter,score){
+					super();
+					this.counter = counter;
+					this.score = score;
+				}
+
+				action(machine){
+					var average=this.counter.average();
+					setText(this.score,average);
+					debug("score",this.score,average);
+					
+			    }
+			}
+
+
+		class ExitGame extends Atom{
+			activation(m){
+				console.log("FIN "+m.instant);
+				return TERM;}
+		}
+		var counter=new Counter();
+	        //AWAITREADY
+			var awaitReady =
+			    new Seq(new DisplayMessage(msg,"Press READY to start!"),
+				    new Seq(new SetButtonState(button,"READY!","green"),
+					    new Await(new PosConfig("click")))
+			    );			
+		//RANDAWAIT			
+			var randAwait =
+			    new Until(new PosConfig("click"),
+				      new Seq(
+					  new Seq(
+					      new DisplayMessage(msg,"Wait..."),
+						  new SetButtonState(button,"WAIT!","red")
+					  ),
+					  new RandomRepeat(new Stop()))
+				      ,new Seq(new Generate("cheating"),new Stop()));
+
+		//AWAITSTOP
+			var awaitStop =
+		new Seq(new DisplayMessage(msg ,"Press STOP as quickly as possible!"),
+			new Until(new PosConfig("click"),
+				new Seq(new SetButtonState(button,"STOP!","green"),
+					new Loop(new Seq(
+						new IncrementCounter(counter),
+						new Stop()
+					)
+					)
+				),
+				new DisplayCounterValue(counter)
+			)
+		);
+
+                         var measure = new Seq(awaitReady,new Seq(new Stop(),new Seq(randAwait,awaitStop)));
+
+
+	      //MESURE
+		var measureList =
+		new Until(new PosConfig("cheating"),
+			new Seq(new Repeat(10,measure),
+				new Seq(new DisplayCounterAverage(counter,score),
+					new Seq(
+						new SetButtonState(button,"CONTINUE!","green"),
+						new Seq(new Stop(),new Await("click"))
+					)
+				)
+			),
+			new Seq(
+				new Seq(
+					new DisplayMessage(msg,"You are cheating!"),
+					new SetButtonState(button,"RESET!","red")
+				),
+				new Seq(
+					new Seq(new Stop(),new ResetCounter(counter)),
+					new Await("click")
+				)
+			)
+		);
+		//GAME
+		
+			var game =
+			    new Until(new PosConfig("tooManyCheats"),
+				    new Merge(
+					    new Seq(
+						    new Repeat(3,new Seq(new Await("cheating"),new Stop())),
+						    new Seq(
+							    new PrintAtom("test to debug"),
+							    new Generate("tooManyCheats")
+								    )
+					    ),
+					    new Loop(
+						    new Seq(
+							    new DisplayMessage(msg,"New game begins!"),
+							    measureList
+						    )
+					    )
+				    ),
+				    new Seq(
+					    new PrintAtom("You are cheating too much Bye!\n"),
+					    new ExitGame()));
+		
+		
+		
+	
+		
+			machine.add(game);
+			//reagir toutes les 30 milisecondes
+			var delay=30;
+		setInterval(function(){machine.react()},delay);
+
+			
+
+		</script>		
+	</body>
+</html>
