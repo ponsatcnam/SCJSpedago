@@ -1,6 +1,6 @@
 <!--- O. Pons juillet 2017 --->
 <!---http://www-sop.inria.fr/meije/rp/SugarCubes/v1/SC-HTML/text.html --->
-#Reactive Synchronous Objects  in Javascript,  Implementing SugarCubes in Javascript 
+# Reactive Synchronous Objects  in Javascript,  Implementing SugarCubes in Javascript 
 
 This document describes  step by step  a minimal (but fully
 functional)  implementation of Sugar
@@ -206,12 +206,12 @@ class ActionAtom extends Atom{
 }
 ```
 
-###Looping instructions
+### Looping instructions
 We now define tow kinds  of Looping Instruction.
 *Loop* for infinite loop and *Repeat* for finite loop.
 Both classes will extend *UnaryInstruction*.
 
-####Infinite loop
+#### Infinite loop
 When the body of an infinite loop is terminated, it is automatically restarted.
 We can left an infinite loop by using a *preemption* Instruction (like *Until* ) that are describer later. 
 
