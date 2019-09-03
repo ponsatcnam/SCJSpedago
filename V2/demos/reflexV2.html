@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <script type="text/javascript" src="../src/V2.js"></script>
+    <script type="text/javascript" src="reflexV2.js"></script>
+		<style>
+		#button {background-color:violet}
+		#wokspace {display:flex}
+		#wokspace * {height:4em;width:33%;border:solid}
+		</style>
+	</head>
+	<body>
+	  <h1> sugar cube V2 example </h1>
+	
+		<div id="wokspace">
+			<span id="ready">READY</span>
+			<span id="stop">STOP</span>
+		</div>
+		<p>
+		  Le jeu consiste à faire une dizaine de mesures de la rapidité avec laquelle l’utilisateur réagit à l’affichage d’un message. Le programme affiche une fenêtre à l’écran, présentant un bouton et deux champs de texte (où l’on affiche les scores ou des messages d’alerte). Au début du jeu, le bouton est vert et affiche le message "READY!". Lorsque l’utilisateur clique dans ce bouton, un essai débute. Durant un délai aléatoire, le bouton devient rouge et affiche le message "WAIT!". On dit que le bouton devient réfractaire􏰀: l’utilisateur ne doit pas cliquer durant ce délai. Puis, brutalement, le bouton retrouve une couleur verte et affiche le message "STOP!". Une mesure de l’écoulement du temps (mesuré en instants logiques de la machine d’exécution) commence. L’utilisateur doit alors réagir le plus rapidement possible en cliquant sur le bouton pour arrêter la mesure. Le résultat de la mesure est affiché. Au bout de 10 mesures, une moyenne est calculée et constitue le score définitif du joueur. Si l’utilisateur clique pendant la période réfractaire, le programme suppose que le joueur essaie de tricher en anticipant sa réaction. Il signale cela au joueur en affichant un message. Le bouton devient rouge et affiche le message "RESET!". La série de mesures est annulée. Le joueur doit cliquer sur le bouton pour démarrer une nouvelle série. Si 3 tentatives de triche sont détectées, le programme signale son mécontentement et termine.
+		</p>
+		<script>
+		
+			console.log("eee");
+			var machine=new EventMachine();
+			
+			var ready=document.getElementById("ready");
+			var stop=document.getElementById("stop");
+			//var score=document.getElementById("score");
+			
+			stop.addEventListener("click", function (event) {
+			    console.log('click stop gererated at ',machine.instant);
+			    machine.add(new Generate("stop"));
+			});
+
+		        ready.addEventListener("click", function (event) {
+			    console.log('click ready gererated at ',machine.instant);
+			    machine.add(new Generate("ready"));
+			});
+			
+                       function setBackground(b,c){b.style.backgroundColor=c;}
+		 // Main g = new Main("Reflex Game");
+        var counter=new Counter();
+        var avaitReady =
+            new Seq(new PrintAtom("Press READY to start!\n"),new Seq(new JavaAtom(new AwaitColors(ready,stop)),new Await("ready")));
+        var randAwait =
+            new Until("stop",
+                      new Seq(new PrintAtom("Wait...\n"),new RandomRepeat(new Stop())),
+                      new Seq(new Generate("cheating"),new Stop()));
+        var awaitStop =
+            new Seq(new PrintAtom("Press STOP to terminate!\n"),
+                    new Until("stop",
+                              new Seq(new JavaAtom(new AwaitColors(stop,ready)),new Loop(new Seq(new JavaAtom(new IncrementCounter()),new Stop()))),
+                              new JavaAtom(new PrintCounterValue())));
+        var measure =
+            new Seq(avaitReady,new Seq(randAwait,awaitStop));
+        var  measureList =
+            new Until("cheating",
+                      new Seq(new Repeat(4,measure),
+                              new JavaAtom(new PrintCounterAverage())),
+                      new Seq(new PrintAtom("You are cheating!\n"),new Stop()));
+       var game =
+           new Until("tooManyCheats",new Merge(new Seq(new Repeat(3,new Seq(new Await("cheating"),new Stop())),new Generate("tooManyCheats"))
+                                   ,new Loop(new Seq(new PrintAtom("New game begins!\n"),measureList)))
+                                               ,new Seq(new PrintAtom("You are cheating too much Bye!\n"),new JavaAtom( new ExitGame())));
+       machine.add(new Cube("counter",counter,game));
+		 	//reagir toutes les 30 milisecondes
+			var delay=30;
+		setInterval(function(){machine.react()},delay);
+		</script>
+	</body>
+</html>
