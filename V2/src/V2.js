@@ -62,8 +62,8 @@ class Instruction {
     rest(){ return this.clone(); }
     
     residual(){
-        if (terminated) {return new Nothing();} 
-        return rest();
+        if (this.terminated) {return new Nothing();} 
+        return this.rest();
     }
     
     clone(){
@@ -75,9 +75,9 @@ class Instruction {
     }
     
     freeze(context){};
-    notifyWarmUpToJava(context){};
-    notifyFreezeToJava(context){};
-    notifyTerminationToJava(context){};
+    notifyWarmUpToJava(context){};  //redermare
+    notifyFreezeToJava(context){};  //freeze
+    notifyTerminationToJava(context){}; //fin
 }
 
 //still abstract
@@ -163,6 +163,8 @@ class Context{
     }
 */
 
+// FIXME trasformer en fct
+
 class JavaBooleangValue {
     constructor(b){
 	this.b=b;
@@ -247,7 +249,7 @@ class Freezable extends UnaryInstruction{
     
     doFreeze(context){
         if(this.firstActivationb||this.terminated) return true;
-        if(context.isToBeFrozen(this.name)){
+        if(context.isToBeFrozen(this.name)){  
             var i = /* Freezable*/ this.residual();
             i.reanim = true;
             context.storeFrozenInstruction(this.name,i);
@@ -282,6 +284,7 @@ class Freezable extends UnaryInstruction{
     }
 }
 
+//FIXME ajouter classe freeze
 
     //Cube
 class Cube extends Freezable
@@ -500,10 +503,12 @@ class Cube extends Freezable
             this.toFreeze=[]; //removeAllElements();
 	}
 	storeFrozenInstruction(name,frozen){
-            this.frozenStore[name]=rozen;
+            this.frozenStore[name]=frozen;
     }
 	getFrozenInstruction(name){
-            return delete this.frozenStore(name);
+	    var tmp=this.frozenStore[name];
+            delete this.frozenStore[name];
+	    return tmp;
     }
 	react(){
             var res = SUSP;
@@ -751,6 +756,28 @@ class ActionAtom extends Atom{
 	f.apply(null,( Array.prototype.slice.call(this.code,1)));
     }
 }
+
+
+
+//Freeze Instruction
+class Freeze extends Atom {
+
+    constructor(target){
+	super();
+	if (typeof target == 'string'){
+	    this.targetNameExp=new JavaStringValue(target);
+	}
+	else  {this.targetNameExp = nameExp; }
+    }
+    
+     toString(){
+        return "freeze "+this.targetNameExp;
+    }
+
+    action(context){
+	context.freezeOrder(this.targetNameExp.evaluate(context.currentLinkf())); }
+}
+
 
 //boucles
 class Cyclic extends UnaryInstruction
@@ -1474,15 +1501,24 @@ Instruction,
 }=require("./OP4.js");
 
 */
+
+/* une expression et un version value qui file la valeur*/
+/* 
+ASPECT DYNAMIQUE...
+*/
 class LinkImpl  extends UnaryInstruction{
-    constructor( obj, i , fin, f, w){
+    constructor( obj, i , fin, f, w){ //
 	super();
-	if(obj instanceof JavaObjectValue){}else{obj=new JavaObjectValue(obj)}
-	this.joe = obj;
-	this.body = i;
-	this.onTerminate = fin;
-	this.onFreeze = f;
-	this.onWarmUp = w;
+	if(obj instanceof JavaObjectValue){}
+	else{
+	    obj=new JavaObjectValue(obj)
+	}
+	this.joe = obj;  //obj
+	this.body = i;   //prog
+	this.onTerminate = fin; //derniere volonter
+
+	this.onFreeze = f; //derniere volonter si freeze
+	this.onWarmUp = w; //a la reanim
 	this.javaObject = null;
 	this.superLink=this,
 	this.trueLink = this;
@@ -1623,6 +1659,7 @@ main();
 //FIN Exemple 2
 */
 //exemple 3
+/*
  function run(){
      console.log("instant "+machine.currentInstant()+":");
      machine.react();
@@ -1639,4 +1676,54 @@ main();
         machine.add(new Generate("e")); 
         run();
     }
+    main();
+*/
+
+//exemple 4
+/*
+function run(){
+     console.log("instant "+machine.currentInstant()+":");
+     machine.react();
+
+}
+
+var freezable1=new Freezable(new JavaStringValue("toto"),new Seq(new Await(new PosConfig("e")),new JavaAtom(new MyPrintInstruction("e !"))) );
+
+function inst(){
+        return new Seq(freezable1, new JavaAtom(new MyPrintInstruction("la suite")));
+}
+
+var globaleSale=1;
+
+    function main () {
+        machine.add(inst());
+        run();
+        machine.add(new Freeze("toto"));
+        run();
+        machine.add(new Generate("e")); 
+        run();
+	globaleSale=machine.getFrozenInstruction("toto");
+	console.log(globaleSale);
+    }
 main();
+
+var machine2=new EventMachine();
+console.log("Reanim----------");
+machine2.add(globaleSale); //reanim
+machine2.add(new Generate("e")); 
+machine2.react();
+*/
+
+
+//exemple 5 link
+
+//console.log(machine);
+
+
+
+/*
+
+ dans V1 si passe machine action avec React....
+   dans V2 Context reduit les methode...et evite les ennuis
+*/
+

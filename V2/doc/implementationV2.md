@@ -1387,7 +1387,8 @@ context.newMove(); }
 return res; }
 ... }
 
-```
+
+```
 
 `EventMachine` owns a shell environment and maintains a table of instructions to be added to registered shells. At the very beginning of each instant, method `processAddToShell` is called to perform the additions. (Method activation of EventMachine presented here is more detailed than the one presented in section 3.2).
 
@@ -1399,12 +1400,13 @@ Only *freezable instructions*, which are named instructions, can be *frozen*. Wh
 it is stopped in the state reached at the end of the current instant, and its residual is stored in the environment. The execution context manages a set of instructions to be frozen (freeze orders), and a pool of frozen
 instructions. It is responsible to call the method freeze of its program at the end of each instant. Method freeze browses the program tree; for UnaryInstructions, it is:
 
-````javascript
+```javascript
 abstract public class UnaryInstruction extends InstructionImpl {
 ...
 public void freeze(Context context){ body.freeze(context); } ...
 }
-````
+```
+
 For `BinaryInstruction`, things are little more complicated as the method `freeze` is called only on active branches. For example, if the left branch of a `Seq` instruction is not terminated, then method `freeze` does not call the method `freeze` on the right branch. The same holds for `Until`, `When`, `If`. We do not give more details on this matter here.
 ### 9.1. Class Freezable
 
@@ -1463,18 +1465,19 @@ One can retrieve `frozen` instructions by calling the method `getFrozenInstruc
 Method `notifyWarmUpToJava` is called when a `frozen` instruction is reactivated (after being added in an execution machine). This method is called by `firstActivation` which tests the `reanim` flag to know if the instruction is descendant of a previously `frozen` instruction. Method `notifyWarmUpToJava` is useful to perform some special tasks before *reanimation*  of `frozen` instructions (for example, dynamic rebinding of associated Java objects; see sections 6 and 7 for more details).
 
 ### 9.2. Freeze instruction
-The Freeze instruction extends Atom and is used to program the freezing of instructions:
-````javascript
-public class Freeze extends Atom {
-protected JavaStringExpression targetNameExp;
-public Freeze(String target){this(new JavaStringValue(target));} public Freeze(JavaStringExpression nameExp){
-targetNameExp = nameExp; }
-public String toString(){
-return "freeze "+targetNameExp;
-}
-protected void action(Context context){
 
-context.freezeOrder(targetNameExp.evaluate(context.currentLink())); }
+The Freeze instruction extends Atom and is used to program the freezing of instructions:
+
+```javascript
+public class Freeze extends Atom {
+	protected JavaStringExpression targetNameExp;
+	public Freeze(String target){this(new JavaStringValue(target));} public 	Freeze(JavaStringExpression nameExp){
+		targetNameExp = nameExp; }
+	public String toString(){
+		return "freeze "+targetNameExp;
+	}
+	protected void action(Context context){
+	context.freezeOrder(targetNameExp.evaluate(context.currentLink())); }
 }
 ```
 
@@ -1484,7 +1487,7 @@ The name of the instruction to freeze can be set at run time using a JavaStringE
 ### 9.3. Freezing mechanism in EventMachine
 In EventMachine, the freezing mechanism is implemented as follows:
 
-````javascript
+```javascript
 public class EventMachine extends Cube implements Domain, Machine {
 	protected Hashtable frozenStore = new Hashtable(); 
 	protected Vector toFreeze = new Vector(); 
@@ -1534,13 +1537,15 @@ public class EventMachine extends Cube implements Domain, Machine {
 	 return (Instruction)frozenStore.remove(name);
 	}
 }
-````
+
+```
 
 Note that `EventMachine` which extends `Freezable` (as it extends `Cube` - see in the next section -) overrides the method `freeze` and never calls method `freeze` of its program. An execution machine encapsulated in another one never transmits freeze orders to its program; this is because reactive machines are *closed cubes* (as said in 2.2.5).
 Note also that instruction additions pending on frozen *shells* are simply discarded.
 
 
-##10. Cubes
+
+## 10. Cubes
 SugarCubes v2 introduces new objects, called cubes. A cube encapsulates in the same entity a standard Java object and a reactive behavior which can be dynamically extended. Actually, a cube is a freezable instruction implementing the Link and Shell interfaces.
 Cubes are the basic unit for code migration, especially when implementing autonomous agents able to migrate over the network.
 
@@ -1548,7 +1553,7 @@ Cubes are the basic unit for code migration, especially when implementing autono
 Class Cube contains a Link which itself contains a Shell. The code is:
 
 
-````javascript
+```javascript
 
 public class Cube extends Freezable implements Link, Shell {
 protected ShellImpl shell;
