@@ -336,8 +336,8 @@ class Cube extends Freezable
         if(this.firstActivationb) return this.body;
         return this.shell.bodyf();
     }
-    javaObject(){
-        if(!this.firstActivationb) return this.link.javaObject();
+    javaObjectf(){
+        if(!this.firstActivationb) return this.link.javaObjectf();
         console.error("Warning: Link not yet activated"); 
         return null;
    }
@@ -1574,7 +1574,7 @@ class LinkImpl  extends UnaryInstruction{
         this.body = new Seq(new JavaAtom(this.onWarmUp),this.body);
     }
 }
- class ShellImpl extends UnaryInstruction
+ class ShellImpl extends UnaryInstruction //
 {
     constructor(n,i){
 	super();
@@ -1721,9 +1721,77 @@ machine2.react();
 
 
 
+//test Link
+
+/*
+var machine = new EventMachine();
+function run(){
+     console.log("instant "+machine.currentInstant()+":");
+     machine.react();
+}
+
+    var unObject = {name:"objetOlivier",autreProp:"une prop",uneMethode:x=>x+1}
+
+    var javaInst={execute:x=>console.log(x.javaObjectf().name+" toujour vivant")}
+		  
+    var monlink = new LinkImpl(unObject,
+			   new Repeat(10,new Seq (new JavaAtom(javaInst),new Stop())),
+			      {execute:x=>console.log(x.javaObjectf().name+ "termine")},
+			      {execute:x=>console.log(x.javaObjectf().name+ "gelé")},
+			      {execute:x=>console.log(x.javaObjectf().name+ "reveillé")});
+    machine.add(monlink);
+for(var i=0;i<20;i++){
+    run();
+}
+*/
+/*
+au depart le link est juste un object java associer a un programme reactif 2 param
+a cause du freeze on doit ajouter dernier volonté, quand on freez quand on reveil
+derniere volonte du until ne marche plus avec le freeze (c'estle finalize de java derniere volonte aveant GC
+
+
+Freeze utils pour persistance donc stockage sur disque
+*/
+
+
+/*
+sheel 
+Instruction qui accepte qu'on ajoute des programme entre 2 instant
+comportement d'un machine (add) mais moins qu'une machine car pas dans un environement evenemetiel
+ici les evenement sont lie a la machine qui me contient
+
+*/
+/*
+ machine : sheel car add
+             link car associer un object comportement par default (print)
+             freeze
+  + definir un environementd'evenment et la notion d'instant (compteur d'instant savoir si un ev est la , decider la fin de l'instant 
+        */
+//test Cube
+function run(){
+     console.log("instant "+machine.currentInstant()+":");
+     machine.react();
+}
+
+var unObjectAveccomportement = {name:"objetOlivier",autreProp:"une prop",uneMethode:x=>x+1,uneAutreMethode:x=>x*2}
+
+    var javaInst={execute:x=>console.log(x.javaObjectf().name+" toujour vivant")}  //a changer
+		  
+var moncube = new Cube("objetOlivier",unObjectAveccomportement,
+			   new Repeat(10,new Seq (new JavaAtom(javaInst),new Stop())),
+		       {execute:x=>console.log(x.javaObjectf().uneAutreMethode(4)+ "termine")},
+			      {execute:x=>console.log(x.javaObjectf().name+ "gelé")},
+			      {execute:x=>console.log(x.javaObjectf().name+ "reveillé")});
+    machine.add(moncube);
+for(var i=0;i<20;i++){
+    run();
+}
 /*
 
  dans V1 si passe machine action avec React....
    dans V2 Context reduit les methode...et evite les ennuis
 */
 
+/*
+Dans la V2 on peut mettre une machine dans une une machine
+*/
