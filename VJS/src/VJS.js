@@ -20,6 +20,7 @@ const SUSP = Symbol("SUSP");
 class Instruction {
 	constructor() {
 		this.terminated = false;
+
 	}
 	reset() { this.terminated = false }
 	terminate() { this.terminated = true }
@@ -30,6 +31,9 @@ class Instruction {
 		var res = this.activation(m);
 		if (res === TERM) { this.terminated = true }
 		return res;
+	}
+	toString(){
+		return this.constructor.name
 	}
 
 }
