@@ -101,21 +101,25 @@ class Machine {
 		}*/
 
 	react() {
-          console.log("debut react");
+          //console.log("debut react");
 	  for(var p of this.pendding){
 		  this.program.add(p);
 	  }
+	  this.pendding=[];
 		this.endOfInstant = false;
 		this.move = false;
 		var res=TERM;
 		while ((res=this.program.activ(this)) == SUSP) {
 
-			if (this.move) { this.move = false } else { this.endOfInstant = true }
+			if (this.move) {
+			  this.move = false
+			  //console.log("machine reactivate", res);
+			  } else { this.endOfInstant = true }
 
 		}
 		this.instant++;
 
-                console.log("fin react");
+                //console.log("fin react");
 		return res!==TERM;
 		//debug(this.instant);
 	}
@@ -128,7 +132,7 @@ class Nothing extends Instruction {
 
 class Stop extends Instruction {
 	activation(m) {
-	  	console.log("activ stop");
+	  	//console.log("activ stop");
 	  	this.terminate();
 		return STOP;
 	  }
@@ -151,15 +155,18 @@ class Seq extends Instruction {
 		this.idx = 0;
 	}
 	activation(m) {
+		//console.log("active seq");
 		var res = TERM;
 		if (this.idx >= this.seq.length) {
 		  	this.terminate();
+			//console.log("fin active seq brutale");
 		  	return TERM;
 		}
 		while ((this.idx < this.seq.length)
 			&& (TERM === (res = this.seq[this.idx].activ(m)))) {
 			this.idx++;
 		}
+		//console.log("fin active seq", res);
 		return res;
 	}
 	toString(){
@@ -208,7 +215,7 @@ class Merge extends Instruction {
 			}
 		}
 		if (STOP === res) {
-		  console.log("on STOP le Merge");
+		  //console.log("on STOP le Merge");
 			for (var b of this.branches) {
 				if (STOP === b.status) {
 					b.status = SUSP;
@@ -220,21 +227,31 @@ class Merge extends Instruction {
 	*/
 	activation(m) {
 		var res = TERM;
+		//console.log("debut merge");
 		for (var b of this.branches) {
 			if (SUSP === b.status) {
+			 	//console.log("merge activ branch...");
 				b.status = b.inst.activ(m);
 			}
 		}
-		for (var b of this.branches) {
-			if (! TERM === b.status) break
-			return TERM
+		for (var i=0; i < this.branches.length; i++) {
+		  	b= this.branches[i];
+			if (TERM !== b.status) break
+			if(i==this.branches.length-1){
+			  //console.log("fin merge TERM");
+			  return TERM
+			  }
 		}
 		for (var b of this.branches) {
-			if ( SUSP === b.status) return SUSP
+			if ( SUSP === b.status){
+			  //console.log("fin merge SUSP");
+			  return SUSP
+			}
 		}
 		for (var b of this.branches) {
 			b.status=SUSP
 		}
+		//console.log("fin merge STOP");
 		return STOP
 		   
 	}
@@ -557,8 +574,9 @@ class Until extends Instruction {
 		this.resumeBody = true;
 	}
 	activation(m) {
-		//	console.log("LOG",this.config,"  ",this.config.constructor.name)
-		if (this.activHandle) { return this.handler.activ(m); }
+		if (this.activHandle) {
+		  return this.handler.activ(m);
+		  }
 		if (this.resumeBody) {
 			var res = this.body.activ(m);
 			if (res != STOP) { return res; }
@@ -566,12 +584,9 @@ class Until extends Instruction {
 		}
 		if (!this.config.fixed(m)) { return SUSP }
 		if (this.config.evaluate(m)) {
-			this.activeHandle = true;
+			this.activHandle = true;
 			return STOP;
-			//if (m.isEndOfInstant()) { return STOP; }
-			//return this.handler.activ(m);
 		}
-
 		this.resumeBody = true;
 		return STOP;
 	}
@@ -586,27 +601,53 @@ class When extends Instruction {
 		this.cthen = cthen;
 		this.celse = celse;
 		this.confEvaluated = false;
-
+		this.value=false;
 	}
 	reset() {
 		super.reset();
 		this.cthen.reset();
 		this.celse.reset();
-		evaluated = false;
+		this.confEvaluated = false;
 	}
 	activation(m) {
-	  	var value = false;
 		if (!this.confEvaluated) {
 			if (!this.config.fixed(m)) { return SUSP; }
-			value = this.config.evaluate(m);
+			this.value= this.config.evaluate(m);
 			this.confEvaluated = true;
 			if (m.isEndOfInstant()) return STOP;
 		}
-		return value ? this.cthen.activ(m) : this.celse.activ(m);
+		return this.value ? this.cthen.activ(m) : this.celse.activ(m);
 	}
 
 }
 
+class Reset extends Instruction {
+	constructor(config, body) {
+		super();
+		this.config = config;
+		this.body = body;
+		this.resumeBody = true;
+	}
+	reset() {
+		super.reset();
+		this.body.reset();
+		this.resumeBody = true;
+	}
+	activation(m) {
+		if (this.resumeBody) {
+			var res = this.body.activ(m);
+			if (res != STOP) { return res; }
+			this.resumeBody = false;
+		}
+		if (!this.config.fixed(m)) { return SUSP }
+		if (this.config.evaluate(m)) {
+			this.body.reset();
+		}
+		this.resumeBody = true;
+		return STOP;
+	}
+
+}
 
 //Evenement Local
 /*class EventDecl extends UnaryInstruction{
@@ -649,33 +690,25 @@ var inst = [
 		new Seq(new Stop(), new PrintAtom("left")),
 		new PrintAtom("right")),
 	new PrintAtom("end of inst")),
-   new Loop(new Seq(new PrintAtom("Hello World!"), new Stop()))
-   ];
-var inst2 = new Merge(new Loop(new Seq(new PrintAtom("Hello World!"), new Stop())),
-	new Repeat(5, new PrintAtom("second branche"))
-);
-
-
-var inst3 = new Merge(
+   new Loop(new Seq(new PrintAtom("Hello World!"), new Stop())),
+   new Repeat(3, new Seq(new PrintAtom("Hello World!"), new Stop())),
+   new Merge(new Loop(new Seq(new PrintAtom("Hello World!"), new Stop())),
+	new Repeat(5, new PrintAtom("second branche"))),
+   new Merge(
 		new Merge(
-			new Seq(new Await("Hello"), new PrintAtom("Hello internal World!"))
-			, new Seq(new Stop(), new Generate("Hello"))
+			new Seq(new Await("Hello2"), new PrintAtom("Hello internal World!"))
+			, new Seq(new Stop(), new Generate("Hello2"))
 		)
 	, new Seq(new Generate("Hello"), new Seq(new Stop(), new Seq(new Await("Hello"),
 		new PrintAtom("Hello exterior World !"))
-	)));
-
-
-var inst4 =
-	new Merge(
+	))),
+new Merge(
 		new Control("Tick",
 			new Seq(new PrintAtom("Hello ")
 				, new Seq(new Stop(), new Seq(new PrintAtom("World!"), new Stop())))
 		),
 		new Repeat(4, new Seq(new Generate("Tick"), new Stop()))
-	);
-
-var inst5 =
+	),
 	new Merge(
 		new Until(new PosConfig("kill_it"),
 			new Loop(
@@ -685,13 +718,24 @@ var inst5 =
 			, new PrintAtom("Goodbye!")
 		)
 		, new Repeat(4, new Seq(new Generate("kill_it"), new Stop()))
-	);
-
-
-
-var inst6 = new Merge(new Loop(new Seq(new ActionAtom(() => console.log(5 * 9)), new Stop())),
+	),
+	new Merge(new Loop(new Seq(new ActionAtom(() => console.log(5 * 9)), new Stop())),
 	new Repeat(5, new PrintAtom("second branche"))
-);
+),
+	new Merge(new When(new PosConfig("e")
+	                 ,new Seq(new Stop(), new PrintAtom("c'est le then"))
+			 ,new Seq(new Stop(), new PrintAtom("c'est le else"))),
+		  new Generate("e")),
+	new Merge(new When(new PosConfig("e")
+	                 ,new Seq(new Stop(), new PrintAtom("c'est le then"))
+			 ,new Seq(new Stop(), new PrintAtom("c'est le else"))),
+		  new Seq(new Stop(), new Generate("e"))),
+	new Merge(new Reset(new PosConfig("e")
+	                 ,new Seq(new PrintAtom("Ça reset"), new Stop(), new PrintAtom("Ça reset plus"))),
+		  new Seq(new Generate("e")))
+];
+
+
 
 var i=0;
 for(var p of inst){
@@ -699,8 +743,9 @@ for(var p of inst){
   machine = new Machine();
   machine.add(p);
   i=0;
-  while(machine.react() && i<10){
+  while(machine.react() && i<20){
     i++;
+    console.log("---");
     }
   console.log("");
   }
