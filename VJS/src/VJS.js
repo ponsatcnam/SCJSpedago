@@ -186,6 +186,7 @@ class Merge extends Instruction {
 			b.inst.reset();
 		}
 	}
+	/*
 	activation(m) {
 		var res = TERM;
 		for (var b of this.branches) {
@@ -199,7 +200,6 @@ class Merge extends Instruction {
 				res = STOP;
 			}
 		}
-		/* le if qui suit est du code défensif */
 		if (TERM === res) {
 			for (var b of this.branches) {
 				if (TERM !== b.status) {
@@ -217,6 +217,28 @@ class Merge extends Instruction {
 		}
 		return res;
 	}
+	*/
+	activation(m) {
+		var res = TERM;
+		for (var b of this.branches) {
+			if (SUSP === b.status) {
+				b.status = b.inst.activ(m);
+			}
+		}
+		for (var b of this.branches) {
+			if (! TERM === b.status) break
+			return TERM
+		}
+		for (var b of this.branches) {
+			if ( SUSP === b.status) return SUSP
+		}
+		for (var b of this.branches) {
+			b.status=SUSP
+		}
+		return STOP
+		   
+	}
+
 }
 
 
