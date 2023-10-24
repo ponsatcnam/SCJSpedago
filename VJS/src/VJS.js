@@ -61,7 +61,7 @@ class BinaryInstruction extends Instruction{
 
 class Machine {
 	constructor() {
-		this.program = new Nothing();
+		this.program = new Merge();
 		this.eventEnv = new EventEnv();
 		this.instant = 1;
 		this.endOfInstant = false;
@@ -101,16 +101,22 @@ class Machine {
 		}*/
 
 	react() {
+          console.log("debut react");
+	  for(var p of this.pendding){
+		  this.program.add(p);
+	  }
 		this.endOfInstant = false;
 		this.move = false;
-		while (this.program.activ(this) == SUSP) {
+		var res=TERM;
+		while ((res=this.program.activ(this)) == SUSP) {
 
 			if (this.move) { this.move = false } else { this.endOfInstant = true }
 
 		}
 		this.instant++;
 
-
+                console.log("fin react");
+		return res!==TERM;
 		//debug(this.instant);
 	}
 }
@@ -121,7 +127,11 @@ class Nothing extends Instruction {
 }
 
 class Stop extends Instruction {
-	activation(m) { this.terminate(); return STOP; }
+	activation(m) {
+	  	console.log("activ stop");
+	  	this.terminate();
+		return STOP;
+	  }
 }
 
 class Seq extends Instruction {
@@ -133,14 +143,27 @@ class Seq extends Instruction {
 		}
 		this.idx = 0;
 	}
+	reset(){
+		super.reset();
+		for (var p of this.seq) {
+			p.reset();
+		}
+		this.idx = 0;
+	}
 	activation(m) {
 		var res = TERM;
-		if (this.idx == this.seq.length) { return TERM; }
-		while (TERM == (res = this.seq[this.idx].activ(m))
-			&& (this.idx < this.seq.length)) {
+		if (this.idx >= this.seq.length) {
+		  	this.terminate();
+		  	return TERM;
+		}
+		while ((this.idx < this.seq.length)
+			&& (TERM === (res = this.seq[this.idx].activ(m)))) {
 			this.idx++;
 		}
 		return res;
+	}
+	toString(){
+		return this.constructor.name;
 	}
 }
 
@@ -153,10 +176,14 @@ class Merge extends Instruction {
 			this.branches.push({ status: SUSP, inst: p });
 		}
 	}
+	add(p) {
+	  	this.branches.push({ status: SUSP, inst: p });
+	}
 	reset() {
 		super.reset();
 		for (var b of this.branches) {
 			b.status = SUSP;
+			b.inst.reset();
 		}
 	}
 	activation(m) {
@@ -168,7 +195,7 @@ class Merge extends Instruction {
 			if (SUSP === b.status) {
 				res = SUSP;
 			}
-			if (TERM === res && TERM !== b.status) {
+			else if (TERM === res && STOP == b.status) {
 				res = STOP;
 			}
 		}
@@ -181,6 +208,7 @@ class Merge extends Instruction {
 			}
 		}
 		if (STOP === res) {
+		  console.log("on STOP le Merge");
 			for (var b of this.branches) {
 				if (STOP === b.status) {
 					b.status = SUSP;
@@ -271,8 +299,7 @@ class Repeat extends Instruction {
 			this.body.reset();
 			return this.counter ? STOP : TERM
 		}
-		else { return res; }
-		return TERM;
+		return res;
 	}
 }
 
@@ -313,12 +340,10 @@ class EventEnv {
 		if (e === undefined) {
 			//never fails
 			debug("new event " + name + " created");
-			e = new Event(name);
-			this.put(name, e);
+			this.eventEnv[name] = e = new Event(name);
 		}
 		return e;
 	}
-	put(name, event) { this.eventEnv[name] = event; }
 }
 
 //configuration
@@ -330,8 +355,28 @@ class Config {
 
 
 //configuration Unuaires
-class UnaryConfig extends Config {
+/*class UnaryConfig extends Config {
 
+	name() {
+		return this.eventName
+	}
+	event(m) {
+		return m.getEvent(this.eventName);
+	}
+	fixed(m) {
+		return this.event(m).presence(m) != UNKNOWN;
+	}
+}*/
+
+class PosConfig extends Config {
+	constructor(name) {
+		super();
+		this.eventName = name
+	}
+
+	evaluate(m) {
+		return this.event(m).isPresent(machine);
+	}
 	name() {
 		return this.eventName
 	}
@@ -343,20 +388,9 @@ class UnaryConfig extends Config {
 	}
 }
 
-class PosConfig extends UnaryConfig {
-	constructor(name) {
-		super();
-		this.eventName = name
-	}
-
-	evaluate(m) {
-		return this.event(m).isPresent(machine);
-	}
-}
 
 
-
-class NegConfig extends UnaryConfig {
+/*class NegConfig extends UnaryConfig {
 	constructor(name) {
 		super();
 		this.eventName = name;
@@ -365,51 +399,71 @@ class NegConfig extends UnaryConfig {
 	evaluate(m) {
 		return !event(m).isPresent(machine);
 	}
-}
+}*/
 
 //configuration binaires
 
-class BinaryConfig {
+/*class BinaryConfig {
 	constructor(c1, c2) {
 		this.c1 = c1; this.c2 = c2;
 	}
-}
+}*/
 
 
-class AndConfig extends BinaryConfig {
-	constructor(c1, c2) {
-		super(c1, c2);
+class AndConfig extends Config {
+	constructor() {
+		this.configs = [];
+		for (var c of arguments) {
+			this.configs.push(c);
+		}
+
 	}
 	fixed(m) {
-		var b1 = this.c1.fixed(m);
-		var b2 = this.c2.fixed(m);
-		if (b1 && !this.c1.evaluate(m)) { return true }
-		if (b2 && !t.c2.evaluate(m)) { return true }
-		return b1 && b2;
+		var fix=false;
+		res=true;
+		for(var c of this.configs){
+		  fix=fix || (c.fixed(m) && !c.evaluate(m));
+		  res=res && c.fixed(m);
+		}
+		return res || fix;
 	}
 
 	evaluate(m) {
-		return this.c1.evaluate(m) && this.c2.evaluate(m);
+		var res=true;
+		for(var c of this.configs){
+		  res=res && c.evaluate(m);
+		}
+		return res;
 	}
 }
 
 
-class OrConfig extends BinaryConfig {
-	constructor(c1, c2) {
-		super(c1, c2);
+class OrConfig extends Config {
+	constructor() {
+		this.configs = [];
+		for (var c of arguments) {
+			this.configs.push(c);
+		}
+
 	}
 	/** La disjunction est fixée  des qu'un element est fixé et evalué a true,
 	 l'autre n'a pas besoin d'etre evalué */
 	fixed(m) {
-		var b1 = this.c1.fixed(m);
-		var b2 = this.c2.fixed(m);
-		if (b1 && this.c1.evaluate(m)) { return true }
-		if (b2 && this.c2.evaluate(m)) { return true }
-		return b1 && b2;
+		var fix=false;
+		res=true;
+		for(var c of this.configs){
+		  fix=fix || (c.fixed(m) && c.evaluate(m));
+		  res=res && c.fixed(m);
+		}
+		return res || fix;
 	}
 
 	evaluate(m) {
-		return this.c1.evaluate(m) || this.c2.evaluate(m);
+		var res=false;
+		for(var c of this.configs){
+		  res=res || c.evaluate(m);
+		}
+		return res;
 	}
 }
 
@@ -422,18 +476,19 @@ class Generate extends Atom {
 	}
 	action(m) {
 		var event = m.getEvent(this.eventName);
-		m.newMove(),
-			event.generate(m);
+		m.newMove();
+		event.generate(m);
 	}
 }
 
 //control par un evenement 
-class Control extends UnaryInstruction {
+class Control extends Instruction {
 	constructor(name, body) {
 		super();
 		this.eventName = name;
 		this.body = body;
 	}
+	reset(){super.reset();this.body.reset();}
 	activation(m) {
 		var event = m.getEvent(this.eventName);
 		//	debug("LOG",this.eventName,"PRESENCE ?",event.presence(m))
@@ -458,40 +513,41 @@ class Await extends Instruction {
 		if (!this.config.fixed(m)) { return SUSP };
 		if (!this.config.evaluate(m)) { return STOP };
 		this.terminate();
-		return m.isEndOfInstant() ? STOP : TERM;
+		return TERM;
 
 	}
 }
 
-
-
-class Until extends BinaryInstruction {
+class Until extends Instruction {
 	constructor(config, body, handler) {
 		super();
 		this.config = config;
-		this.left = body;
-		this.right = (handler || new Nothing());
+		this.body = body;
+		this.handler = (handler || new Nothing());
 		this.activHandle = false,
-			this.resumeBody = true;
+		this.resumeBody = true;
 	}
 	reset() {
 		super.reset();
+		this.body.reset();
+		this.handler.reset();
 		this.activHandle = false,
-			this.resumeBody = true;
+		this.resumeBody = true;
 	}
 	activation(m) {
 		//	console.log("LOG",this.config,"  ",this.config.constructor.name)
-		if (this.activHandle) { return this.right.activ(m); }
+		if (this.activHandle) { return this.handler.activ(m); }
 		if (this.resumeBody) {
-			var res = this.left.activ(m);
+			var res = this.body.activ(m);
 			if (res != STOP) { return res; }
 			this.resumeBody = false;
 		}
 		if (!this.config.fixed(m)) { return SUSP }
 		if (this.config.evaluate(m)) {
 			this.activeHandle = true;
-			if (m.isEndOfInstant()) { return STOP; }
-			return this.right.activ(m);
+			return STOP;
+			//if (m.isEndOfInstant()) { return STOP; }
+			//return this.handler.activ(m);
 		}
 
 		this.resumeBody = true;
@@ -501,27 +557,30 @@ class Until extends BinaryInstruction {
 }
 
 //Test de configuration
-class When extends BinaryInstruction {
+class When extends Instruction {
 	constructor(config, cthen, celse) {
 		super();
 		this.config = config;
-		this.left = cthen;
-		this.right = celse;
+		this.cthen = cthen;
+		this.celse = celse;
 		this.confEvaluated = false;
 
 	}
 	reset() {
 		super.reset();
+		this.cthen.reset();
+		this.celse.reset();
 		evaluated = false;
 	}
 	activation(m) {
+	  	var value = false;
 		if (!this.confEvaluated) {
-			if (this.config.fixed(m)) { return SUSP; }
-			var value = this.config.evaluate(m);
+			if (!this.config.fixed(m)) { return SUSP; }
+			value = this.config.evaluate(m);
 			this.confEvaluated = true;
 			if (m.isEndOfInstant()) return STOP;
 		}
-		return value ? this.left.activ(m) : this.right.activ(m);
+		return value ? this.cthen.activ(m) : this.celse.activ(m);
 	}
 
 }
@@ -557,32 +616,35 @@ class When extends BinaryInstruction {
 /////////
 var machine = new Machine(10);
 //test sans boucle
-var inst = new Seq(
+var inst = [
+   new PrintAtom("Hello World !"),
+   new Seq(new PrintAtom("Hello"), new Stop(), new PrintAtom("World!")),
+   new Seq(new PrintAtom("Hello"), new Stop(), new Stop(), new PrintAtom("World!")),
+   new Seq(new PrintAtom("Hello"), new Stop(), new Stop(), new Stop(), new PrintAtom("World!")),
+   new Merge(new PrintAtom("Hello"), new PrintAtom("World!")),
+   new Seq(
 	new Merge(
 		new Seq(new Stop(), new PrintAtom("left")),
 		new PrintAtom("right")),
-	new PrintAtom("end of inst")
-);
-
-//test boucle
-var inst = new Loop(new Seq(new PrintAtom("Hello World!"), new Stop()));
-var inst = new Merge(new Loop(new Seq(new PrintAtom("Hello World!"), new Stop())),
+	new PrintAtom("end of inst")),
+   new Loop(new Seq(new PrintAtom("Hello World!"), new Stop()))
+   ];
+var inst2 = new Merge(new Loop(new Seq(new PrintAtom("Hello World!"), new Stop())),
 	new Repeat(5, new PrintAtom("second branche"))
 );
 
 
-var inst = new Merge(
-	new EventDecl("Hello",
+var inst3 = new Merge(
 		new Merge(
 			new Seq(new Await("Hello"), new PrintAtom("Hello internal World!"))
 			, new Seq(new Stop(), new Generate("Hello"))
-		))
+		)
 	, new Seq(new Generate("Hello"), new Seq(new Stop(), new Seq(new Await("Hello"),
 		new PrintAtom("Hello exterior World !"))
 	)));
 
 
-var inst =
+var inst4 =
 	new Merge(
 		new Control("Tick",
 			new Seq(new PrintAtom("Hello ")
@@ -591,7 +653,7 @@ var inst =
 		new Repeat(4, new Seq(new Generate("Tick"), new Stop()))
 	);
 
-var inst =
+var inst5 =
 	new Merge(
 		new Until(new PosConfig("kill_it"),
 			new Loop(
@@ -605,19 +667,27 @@ var inst =
 
 
 
-var inst = new Merge(new Loop(new Seq(new ActionAtom(() => console.log(5 * 9)), new Stop())),
+var inst6 = new Merge(new Loop(new Seq(new ActionAtom(() => console.log(5 * 9)), new Stop())),
 	new Repeat(5, new PrintAtom("second branche"))
 );
 
-/*
-machine.add(inst);
-machine.react();
-  */
+var i=0;
+for(var p of inst){
+  console.log("Nouvelle machine");
+  machine = new Machine();
+  machine.add(p);
+  i=0;
+  while(machine.react() && i<10){
+    i++;
+    }
+  console.log("");
+  }
+
 /* moudule */
 module.exports = {
 	Instruction: Instruction,
-	UnaryInstruction: UnaryInstruction,
-	BinaryInstruction: BinaryInstruction,
+	//UnaryInstruction: UnaryInstruction,
+	//BinaryInstruction: BinaryInstruction,
 	Machine: Machine,
 	Nothing: Nothing,
 	Stop: Stop,
@@ -631,10 +701,10 @@ module.exports = {
 	Event: Event,
 	EventEnv: EventEnv,
 	Config: Config,
-	UnaryConfig: UnaryConfig,
+	//UnaryConfig: UnaryConfig,
 	PosConfig: PosConfig,
-	NegConfig: NegConfig,
-	BinaryConfig: BinaryConfig,
+	//NegConfig: NegConfig,
+	//BinaryConfig: BinaryConfig,
 	AndConfig: AndConfig,
 	OrConfig: OrConfig,
 	Generate: Generate,
@@ -642,7 +712,7 @@ module.exports = {
 	Await: Await,
 	Until: Until,
 	When: When,
-	EventDecl: EventDecl
+	//EventDecl: EventDecl
 
 }
 
