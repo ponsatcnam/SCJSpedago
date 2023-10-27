@@ -64,7 +64,7 @@ Finally, instants provide a clear semantics to simultaneity of events during one
 
 In the following, reactive instructions and reactive programs will be considered as synonymous.
 
-####Activation of a reactive instruction
+#### Activation of a reactive instruction
 An instruction is activated by a call to its method *activ*. It transmits activation to its sub-terms, following the syntax tree; this is shown on the example:
  
 ![images/SCv2fig4](images/SCv2fig4.png)
@@ -111,7 +111,7 @@ Computing the residual of a frozen instruction means to browse the instruction b
 #### 2.2.3. Link
 Reactive instructions do not directly perform data computations which must be handled by standard Java objects. A link encapsulates a Java object and a reactive behaviour in the same instruction. The associated object becomes the default object with which the reactive instruction interacts.
 
-####2.2.5. Cube
+#### 2.2.5. Cube
 
 A Cube is the encapsulation in the same entity of a standard Java object and of a dynamic reactive behaviour. Cubes are autonomous instructions run in parallel in the system and communicating using broadcast events. A Cube is actually the combination of a link, and of a shell, and it is also a basic unit of migration (that is to say, a Cube is a freezable instruction):
 
@@ -326,6 +326,7 @@ Methods *addToShell*, *registerShell*, and *removeShell* are used to implement d
 
 ##### Freeze orders
 Method freezeOrder adds the name of an instruction to the set of instructions having to be frozen at the end of the reaction. It is usually called by the Freeze instruction (see section 9). Method isToBeFrozen is called by an instruction, when the instant is over, to know if it has to be frozen. If true, the instruction proceeds the freeze order as described in the previous subsection (about instructions). Method storeFrozenInstruction stores the residual of a frozen instruction in the execution context. Finally, getFrozenInstruction retrieves the residual of a frozen instruction. Note that calling getFrozenInstruction to retreive a recently frozen instruction also removes this instruction from the frozen instructions pool in the environment; so, it can be called only once to retreive a particular instruction.
+
 #### 3.2.2. Event Machines
 
 Execution machine of class *EventMachine* implements interfaces *Machine* and Context. It provides an event environment for reactive programs and detects ends of instants.
@@ -428,6 +429,7 @@ public Object clone(){
 
 
 #### 3.2.3. Processing of instants
+
 Finally, in SugarCubes, execution machines allow the user to implement special tasks performed at the beginning or at the end of instants by overridding the two methods notifyBeginOfInstantToJava and notifyEndOfInstantToJava. This can be for example useful to perform periodic graphics refreshes at each instant.
 
 
@@ -539,6 +541,7 @@ Note that in SugarCubes v2, PrintAtom has been moved to the inria.meije.rc.io pa
 
 
 ### 4.5. Cyclic Instructions
+
 SugarCubes provides two kinds of loops: infinite loops and finite ones; both extend the abstract class Cyclic,
 which has the following structure:
 
@@ -554,11 +557,14 @@ Note that each iteration of a cyclic instruction uses a new fresh copy of the in
 
 
 ### 4.6. Infinite loops
+
 When the body of an infinite loop of class Loop is terminated, it is automatically and immediately restarted.
 
 #### Instantaneous loops
+
 A loop is said to be instantaneous when it cannot terminate its reaction for the current instant in a finite time because its body terminates and is restarted for ever. Instantaneous loops are to be rejected because they would never converge to a stable state closing the instant.
 To avoid instantaneous loops we use the following heuristics: a loop enforces a stop to occur at the end of the execution of the body if the beginning of it has also been previously executed during the same instant. This is a valid strategy because all successive iterations would probably also terminate during the same instant, leading to an instantaneous loop.
+
 #### Class Loop
 
 
@@ -587,6 +593,7 @@ endReached = true;
 ```
 
 #### 4.7. Finite Loops
+
 Finite loops are implemented by the class Repeat. A finite loop executes its body a fixed number of times. Therefore, there is no detection of instantaneous looping, because finite loops cannot diverge.
 
 ```javascript
@@ -617,6 +624,7 @@ The number of iterations is determinated at run time, when using the constructor
 
 
 ####4.8. If
+
 Class *If* extends *BinaryInstruction* and allows execution to choose between *the then branch* (**left**) or *the else branch* (**right**) according to the evaluation of a boolean expression. The boolean expression is computed by an object implementing the *JavaBooleanExpression* interface (see section 6.2). Code of class *If* is:
 
 ```javascript
@@ -643,6 +651,7 @@ return value ? left.activ(context) : right.activ(context);
 
 
 ### 4.9. An Example
+
 The little example we consider here consists in running three instants of a machine. First, one defines the machine and an instruction using the primitives *Stop*, *Seq*, *Merge*, and *PrintAtom*; then, the instruction is added to the machine; finally, three machine activations are provoked.
 
 ```javascript
@@ -952,7 +961,7 @@ public class Control extends UnaryInstruction {
 
 ### 5.8. Local Event Declaration
 
-`EventDecl` extends `UnaryInstruction` and defines a local event. The scope of the local event is the body of the declaration. The local event hides the global event with the same name. The local event cannot be accessed by components that are extern to the local declaration and vice versa.
+`EventDecl` extends `UnaryInstruction` and defines a local event. The scope of the local event is the body of the declaration. The local event hides the global event with the same name. The local event cannot be accessed by components that are extern to the local declaration and vice versa.
 
 ```javascript
 public class EventDecl extends UnaryInstruction {
@@ -975,8 +984,8 @@ return res; }
 The status of the local event is stored in the field local and the status of the external event is temporarily stored in external during activations.
 
 #### Class IODecl
-Class `IODecl` extends `EventDecl` and binds an internal event to a global event. It is basically used for event renaming. For example, if a local event $e_l$ is bound to the global event $e_g$, then the body of `IODecl` sees $e_l$ as
-$e_g$: if $e_g$ is present then $e_l$ is also present for the body; if $e_l$ is generated in the body then $e_g* is generated. That is to say, `IODecl` performs an input binding (global to local), and also an output binding (local to global).
+Class `IODecl` extends `EventDecl` and binds an internal event to a global event. It is basically used for event renaming. For example, if a local event $e_l$ is bound to the global event $e_g$, then the body of `IODecl` sees $e_l$ as
+$e_g$: if $e_g$ is present then $e_l$ is also present for the body; if $e_l$ is generated in the body then $e_g* is generated. That is to say, `IODecl` performs an input binding (global to local), and also an output binding (local to global).
 
 ```javascript
 public class IODecl extends EventDecl {
@@ -1033,7 +1042,8 @@ class Example1 {
 		System.out.println("");
 	}
 	public static Instruction inst(){
-		return new Seq(new Await(new PosConfig("e")),new PrintAtom("e! ")); `	}
+		return new Seq(new Await(new PosConfig("e")),new PrintAtom("e! ")); `
+	}
 	public static void main (String argv[]) {
 		machine.add(inst());
 		run();
@@ -1052,7 +1062,7 @@ Execution gives:
 	instant 2:
 	instant 3: e! e!
 ```
-Note that the two `Await` instructions are both fired during the third instant, when the event is generated. 
+Note that the two `Await` instructions are both fired during the third instant, when the event is generated. 
 
 ## 6. Links
 
@@ -1097,7 +1107,7 @@ When a *link* instruction is activated, it performs the following tasks in seque
 superLink;
 2. stores itself has the new *currentLink* by calling the *setLink* of the `Context` interface;
 3. activates its body;
-4. restores the `currentLink` to `superLink`.
+4. restores the `currentLink` to `superLink`.
 
 Code of LinkImpl is the following:
 
@@ -1157,7 +1167,7 @@ The following section is a presentation of the different interfaces for computin
 
 
 ## 7. Java Expressions and Instructions
-Some instructions such as `If` and `Repeat` may need some run time information (for example, an integer value which is the number of iterations of a finite loop) in order to execute. In **SugarCubes v2**, these run time computations are performed by Java expressions. Method calls performed on Java objects others than reactive instructions (for example, showing a window) are handled in SugarCubes v2 by Java instructions. Java expressions and Java instructions are described in the rest of the section.
+Some instructions such as `If` and `Repeat` may need some run time information (for example, an integer value which is the number of iterations of a finite loop) in order to execute. In **SugarCubes v2**, these run time computations are performed by Java expressions. Method calls performed on Java objects others than reactive instructions (for example, showing a window) are handled in SugarCubes v2 by Java instructions. Java expressions and Java instructions are described in the rest of the section.
 
 
 
@@ -1173,7 +1183,7 @@ public interface JavaBooleanExpression extends Java.io.Serializable,Cloneable {
  }
 ```
 
-When the instruction `If` needs a boolean value to decide which branch to execute, it calls the method evaluate of the JavaBooleanExpression it contains.The argument self is actually the current active link. Using it, the JavaBooleanExpression get access to the Java object bound to the reactive program.
+When the instruction `If` needs a boolean value to decide which branch to execute, it calls the method evaluate of the JavaBooleanExpression it contains.The argument self is actually the current active link. Using it, the JavaBooleanExpression get access to the Java object bound to the reactive program.
 
 
 #### JavaIntegerExpression
@@ -1183,11 +1193,11 @@ A JavaIntegerExpression computes an integer value, used for example by Repeat in
 A JavaStringExpression computes a string value, used for example by PosConfig to computes an event name at run time.
 
 #### JavaObjectExpression
-A JavaObjectExpression computes a Java object reference used for example by `LinkImpl` to associate at run time an object to its body.
+A JavaObjectExpression computes a Java object reference used for example by `LinkImpl` to associate at run time an object to its body.
 
 #### JavaInstructionExpression
 
-A JavaInstructionExpression computes a Java object which is actually a reactive instruction; it is used for example by instruction `AddToShell` described in section 6.3.
+A JavaInstructionExpression computes a Java object which is actually a reactive instruction; it is used for example by instruction `AddToShell` described in section 6.3.
 
 #### Static expressions
 Some predefined classes implementing the previous Java expressions are handling static values (not computed at run-time), for example, class JavaBooleanValue handles static boolean values :
@@ -1200,22 +1210,23 @@ public boolean evaluate(Link self) { return b; }
 public String toString(){ return ""+b; } }
 ```
 
-Similarly, are defined `JavaIntegerValue`, `JavaStringValue`, `JavaObjectValue`, and
+Similarly, are defined `JavaIntegerValue`, `JavaStringValue`, `JavaObjectValue`, and
 `JavaInstructionValue` that handle respectively static integer, string, object, and reactive instruction values.
 
 ### 7.2. Java instructions
-Interface `JavaInstruction` implements interactions with Java objects (for example, to display a message on the screen) without any return value.
+Interface `JavaInstruction` implements interactions with Java objects (for example, to display a message on the screen) without any return value.
 
 ```javascript
 public interface JavaInstruction extends Java.io.Serializable,Cloneable {
-	public void execute(Link self); `}
+	public void execute(Link self); `
+}
 ```
 
 Method execute of JavaInstruction takes the current active link as parameter. In this method, one can put any standard Java code and the Java object associated by the link is returned by method javaObject called with self as parameter.
 
 ####Class JavaAtom
 
-*Java instructions* are used by the class `JavaAtom`. A `JavaInstruction` implements an atomic action which can interact with *Java* objects.
+*Java instructions* are used by the class `JavaAtom`. A `JavaInstruction` implements an atomic action which can interact with *Java* objects.
 
 ```javascript 
 public class JavaAtom extends Atom {
@@ -1246,13 +1257,13 @@ public class MyPrintInstruction implements JavaInstruction {
 Then, one uses this Java instruction with a JavaAtom:  
 ` new JavaAtom(new MyPrintInstruction(“message”)) `
 which is actually equivalent to:  
-`new PrintAtom(“message”)`
+`new PrintAtom(“message”)`
 
 
 
 #### Class JavaEmptyInstruction
 
-The class `JavaEmptyInstruction` implements the `JavaInstruction` interface and its method execute does nothing.
+The class `JavaEmptyInstruction` implements the `JavaInstruction` interface and its method execute does nothing.
 
 
 
@@ -1264,16 +1275,16 @@ The class `JavaEmptyInstruction` implements the `JavaInstruction` interface an
 A shell implements the Shell interface:
 
 
-```javascript 
+```javascript 
 public interface Shell extends Instruction {
 	void add(Instruction inst);
 	public Instruction body();
 }
 ```
 
-Method `add` performs the actual adding of an instruction in a *shell*: the instruction is put in parallel with the shell body. This method is called by the reactive machine at ends of the instants. Instructions added are the ones collected during the instant.
+Method `add` performs the actual adding of an instruction in a *shell*: the instruction is put in parallel with the shell body. This method is called by the reactive machine at ends of the instants. Instructions added are the ones collected during the instant.
 
-The program handled by a *shell* is returned by the method `body`.
+The program handled by a *shell* is returned by the method `body`.
 
 ### 8.2. Shell implementation
 
@@ -1310,17 +1321,17 @@ public class ShellImpl extends UnaryInstruction implements Shell,NamedInstructio
 ...
 }
 ```
-The method `add` simply creates a new `body` which is a `Merge` of the new added instruction and of the already executing body.
+The method `add` simply creates a new `body` which is a `Merge` of the new added instruction and of the already executing body.
 
 #### First and last activations
 
-Method `firstActivation` computes the name of the shell and then calls the `registerShell` method of the *execution context*. Thus, the shell exports its reference (its name), allowing other components in the system to add new instructions in it.
+Method `firstActivation` computes the name of the shell and then calls the `registerShell` method of the *execution context*. Thus, the shell exports its reference (its name), allowing other components in the system to add new instructions in it.
 
 
-Method `lastActivation` removes the reference to the shell, when it terminates.
+Method `lastActivation` removes the reference to the shell, when it terminates.
 
 ### 8.3. Class AddToShell
-Class `AddToShell` extends `Atom` and requests an instruction to be added to a shell.
+Class `AddToShell` extends `Atom` and requests an instruction to be added to a shell.
 
 ```javascript
 public class AddToShell extends Atom {
@@ -1342,13 +1353,16 @@ public class AddToShell extends Atom {
 	context.addToShell(targetNameExp.evaluate(context.currentLink()) 						,(Instruction)instExp.evaluate(context.currentLink()));
 	}
 }
-```
-This instruction has two parameters: the name of the target *shell* (which can be set at run time using a `JavaStringExpression`) and the instruction to be added (which can also be set at run time using a `JavaInstructionExpression`).
+```
 
-Class `AddToShell` actually uses the `Context` interface for accessing registered shells. Adding orders are collected during the instant; at the end of it, the execution machine adds all the collected instructions into the corresponding shells; thus, additions become actual only at the next instant.
+This instruction has two parameters: the name of the target *shell* (which can be set at run time using a `JavaStringExpression`) and the instruction to be added (which can also be set at run time using a `JavaInstructionExpression`).
+
+Class `AddToShell` actually uses the `Context` interface for accessing registered shells. Adding orders are collected during the instant; at the end of it, the execution machine adds all the collected instructions into the corresponding shells; thus, additions become actual only at the next instant.
 
 The corresponding code of EventMachine is the following:
-```javascript
+
+
+```javascript
 public class EventMachine extends Cube implements Domain, Machine {
 protected boolean move = false, endOfInstant = false, beginingOfInstant = true;
 ...
@@ -1390,8 +1404,9 @@ return res; }
 
 ```
 
-`EventMachine` owns a shell environment and maintains a table of instructions to be added to registered shells. At the very beginning of each instant, method `processAddToShell` is called to perform the additions. (Method activation of EventMachine presented here is more detailed than the one presented in section 3.2).
-
+`EventMachine` owns a shell environment and maintains a table of instructions to be added to registered shells. At the very beginning of each instant, method `processAddToShell` is called to perform the additions. (Method activation of EventMachine presented here is more detailed than the one presented in section 3.2).
+
+
 ## 9. Freeze of components
 In SugarCubes v2, it is possible to extract executing components out of systems. The key point is that extractions are performed when components are in stable states (at ends of instants). This is specially useful to implement code migration over the network or code persistence mechanisms.
 
@@ -1407,7 +1422,7 @@ public void freeze(Context context){ body.freeze(context); } ...
 }
 ```
 
-For `BinaryInstruction`, things are little more complicated as the method `freeze` is called only on active branches. For example, if the left branch of a `Seq` instruction is not terminated, then method `freeze` does not call the method `freeze` on the right branch. The same holds for `Until`, `When`, `If`. We do not give more details on this matter here.
+For `BinaryInstruction`, things are little more complicated as the method `freeze` is called only on active branches. For example, if the left branch of a `Seq` instruction is not terminated, then method `freeze` does not call the method `freeze` on the right branch. The same holds for `Until`, `When`, `If`. We do not give more details on this matter here.
 ### 9.1. Class Freezable
 
 In **SugarCubesv2**, instruction Freezable is the only instruction which implements method freeze. Class
@@ -1448,7 +1463,7 @@ super.firstActivation(context); }
 
 ```
 
-Method `freeze` calls the method `doFreeze` which actually `freezes` the instruction, if needed.
+Method `freeze` calls the method `doFreeze` which actually `freezes` the instruction, if needed.
 
 1. First, it checks if the instruction need to be frozen by calling the method isToBeFrozen on the execution context. If so, then it computes the remaining program by calling the method residual.
 2. Then, it stores the result in the execution context by calling the method storeFrozenInstruction.
@@ -1457,12 +1472,12 @@ useful to disable bindings of the Java object associated with the instruction, i
 4. Finally, it replaces its body by Nothing, and returns.
 
 
-Note that a `Freezable` instruction which is *frozen* does not call the method `freeze` of its body. A boolean value is returned by method `doFreeze` to indicate that the *freeze order* has been actually proceeded, so method `freeze` will not be called on the body. Therefore, if a `Freezable` instruction is encapsulated in the *body* of an other `Freezable` instruction, and if the two instructions are requested to *freeze* in the same instant, then only the encapsulating one is actually `frozen`.
+Note that a `Freezable` instruction which is *frozen* does not call the method `freeze` of its body. A boolean value is returned by method `doFreeze` to indicate that the *freeze order* has been actually proceeded, so method `freeze` will not be called on the body. Therefore, if a `Freezable` instruction is encapsulated in the *body* of an other `Freezable` instruction, and if the two instructions are requested to *freeze* in the same instant, then only the encapsulating one is actually `frozen`.
 
 
-One can retrieve `frozen` instructions by calling the method `getFrozenInstruction` on the execution context. The instruction obtained can then be sent over the network, for example using **RMI** and the serialization mechanism of Java.
+One can retrieve `frozen` instructions by calling the method `getFrozenInstruction` on the execution context. The instruction obtained can then be sent over the network, for example using **RMI** and the serialization mechanism of Java.
 
-Method `notifyWarmUpToJava` is called when a `frozen` instruction is reactivated (after being added in an execution machine). This method is called by `firstActivation` which tests the `reanim` flag to know if the instruction is descendant of a previously `frozen` instruction. Method `notifyWarmUpToJava` is useful to perform some special tasks before *reanimation*  of `frozen` instructions (for example, dynamic rebinding of associated Java objects; see sections 6 and 7 for more details).
+Method `notifyWarmUpToJava` is called when a `frozen` instruction is reactivated (after being added in an execution machine). This method is called by `firstActivation` which tests the `reanim` flag to know if the instruction is descendant of a previously `frozen` instruction. Method `notifyWarmUpToJava` is useful to perform some special tasks before *reanimation*  of `frozen` instructions (for example, dynamic rebinding of associated Java objects; see sections 6 and 7 for more details).
 
 ### 9.2. Freeze instruction
 
@@ -1540,7 +1555,7 @@ public class EventMachine extends Cube implements Domain, Machine {
 
 ```
 
-Note that `EventMachine` which extends `Freezable` (as it extends `Cube` - see in the next section -) overrides the method `freeze` and never calls method `freeze` of its program. An execution machine encapsulated in another one never transmits freeze orders to its program; this is because reactive machines are *closed cubes* (as said in 2.2.5).
+Note that `EventMachine` which extends `Freezable` (as it extends `Cube` - see in the next section -) overrides the method `freeze` and never calls method `freeze` of its program. An execution machine encapsulated in another one never transmits freeze orders to its program; this is because reactive machines are *closed cubes* (as said in 2.2.5).
 Note also that instruction additions pending on frozen *shells* are simply discarded.
 
 
@@ -1601,7 +1616,7 @@ body = new Seq(new JavaAtom(onWarmUp),body); }
 }
 ```
 
-The encapsulated *Link* and *Shell* are actually instantiated at the first activation. Some *JavaInstruction* are used to perform specific tasks when a *freeze* order occurs (`notifyFreezeToJava`), When a reanimation occurs (`notifyWarmupToJava`), or when the cube terminates (notifyTerminationToJava`).
+The encapsulated *Link* and *Shell* are actually instantiated at the first activation. Some *JavaInstruction* are used to perform specific tasks when a *freeze* order occurs (`notifyFreezeToJava`), When a reanimation occurs (`notifyWarmupToJava`), or when the cube terminates (notifyTerminationToJava`).
 
 
 
