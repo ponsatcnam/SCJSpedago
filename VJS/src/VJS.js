@@ -47,6 +47,7 @@ class Machine {
     this.move = false;
     this.pendding = [];
     this.getEvent("stdout");
+    this.actions=[];
   }
 
   currentInstant() { return this.instant; }
@@ -62,6 +63,9 @@ class Machine {
   generate(name) {
     this.getEvent(name).generate(this);
   }
+  addAction(f){
+    this.actions.push(f);
+  }
   react() {
     for(var p of this.pendding){
       this.program.add(p);
@@ -76,6 +80,10 @@ class Machine {
         } else { this.endOfInstant = true }
     }
     this.program.collectValues(this);
+    for(var f of this.actions){
+      f(this);
+      }
+    this.actions=[];
     var messages=this.getEvent('stdout').getValues(this);
     if(messages){
       for(var m of messages){
@@ -194,12 +202,11 @@ class Atom extends Instruction {
 class ActionAtom extends Atom {
   constructor() {
     super();
-    this.code = arguments;
+    this.code = arguments[0];
   }
 
   action(m) {
-    var f = this.code[0];
-    f.apply(null, (Array.prototype.slice.call(this.code, 1)));
+    m.addAction(this.code);
   }
 }
 
