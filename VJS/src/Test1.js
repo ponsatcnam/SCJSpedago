@@ -82,8 +82,9 @@ var inst = [
 
 
 var i=0;
-for(var p of inst){
-  console.log("Nouvelle machine");
+for(var i in inst){
+  const p=inst[i];
+  console.log("*** Test",i);
   machine = new Machine();
   machine.add(p);
   i=0;

@@ -1,0 +1,213 @@
+*** Test 0
+Hello World !
+
+*** Test 1
+Hello
+---
+World!
+
+*** Test 2
+Hello
+---
+---
+World!
+
+*** Test 3
+Hello
+---
+---
+---
+World!
+
+*** Test 4
+Hello
+World!
+
+*** Test 5
+right
+---
+left
+end of inst
+
+*** Test 6
+Hello World!
+---
+---
+Hello World!
+---
+---
+Hello World!
+---
+---
+Hello World!
+---
+---
+Hello World!
+---
+---
+Hello World!
+---
+---
+Hello World!
+---
+---
+Hello World!
+---
+---
+Hello World!
+---
+---
+Hello World!
+---
+---
+Hello World!
+
+*** Test 7
+Hello World!
+---
+---
+Hello World!
+---
+---
+Hello World!
+---
+
+*** Test 8
+Hello World!
+second branche
+---
+second branche
+---
+Hello World!
+second branche
+---
+second branche
+---
+Hello World!
+second branche
+---
+---
+Hello World!
+---
+---
+Hello World!
+---
+---
+Hello World!
+---
+---
+Hello World!
+---
+---
+Hello World!
+---
+---
+Hello World!
+---
+---
+Hello World!
+---
+---
+Hello World!
+
+*** Test 9
+---
+Hello internal World!
+---
+---
+---
+---
+---
+---
+---
+---
+---
+---
+---
+---
+---
+---
+---
+---
+---
+---
+---
+
+*** Test 10
+Hello 
+---
+---
+World!
+---
+---
+---
+---
+---
+
+*** Test 11
+---
+Goodbye!
+---
+---
+---
+---
+---
+---
+
+*** Test 12
+45
+second branche
+---
+second branche
+---
+45
+second branche
+---
+second branche
+---
+45
+second branche
+---
+---
+45
+---
+---
+45
+---
+---
+45
+---
+---
+45
+---
+---
+45
+---
+---
+45
+---
+---
+45
+---
+---
+45
+
+*** Test 13
+---
+c'est le then
+
+*** Test 14
+---
+---
+c'est le else
+
+*** Test 15
+Ça reset
+---
+Ça reset
+---
+Ça reset plus
+
+*** Test 16
+vals 1, 2, 3
+
