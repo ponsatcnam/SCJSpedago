@@ -76,7 +76,25 @@ var inst = [
     new Seq(new Await("n"), new Generate("n", 1)),
     new Generate("n", 2),
     new Seq(new Await("n"), new Generate("n", 3)),
-    new ActionAtom(()=>{ var vals=machine.getEvent("n").getValues(machine); console.log('vals', vals.join(', '));}))
+    new ActionAtom((m)=>{ var vals=m.getEvent("n").getValues(m); console.log('vals', vals.join(', '));})),
+  new Merge(
+    new Seq(new Await("n"), new Generate("n", 1)),
+    new Generate("n", 2),
+    new Seq(new Await("n"), new Generate("n", 3), new Generate('n', 4)),
+    new ActionAtom((m)=>{ var vals=m.getEvent("n").getValues(m); console.log('vals', vals.join(', '));})),
+  new Merge(
+    new Loop(new When(new PosConfig("e"),
+                      new When(new AndConfig(new PosConfig("f"), new PosConfig("g")),
+                               new PrintAtom("f"),
+                               new PrintAtom("g")),
+                      new PrintAtom("e"))),
+    new Loop(new Seq(new Repeat(5, new Generate('e')) , new Stop())),
+    new Loop(new Seq(
+                     new Stop(),
+                     new Generate("f"),
+                     new Stop(),
+                     new Generate("f"),
+                     new Generate("g"))))
 ];
 
 

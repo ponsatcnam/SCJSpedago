@@ -346,6 +346,7 @@ class PosConfig extends Config {
 
 class AndConfig extends Config {
   constructor() {
+    super();
     this.configs = [];
     for (var c of arguments) {
       this.configs.push(c);
@@ -354,7 +355,7 @@ class AndConfig extends Config {
 
   fixed(m) {
     var fix=false;
-    res=true;
+    var res=true;
     for(var c of this.configs){
       fix=fix || (c.fixed(m) && !c.evaluate(m));
       res=res && c.fixed(m);
@@ -373,6 +374,7 @@ class AndConfig extends Config {
 
 class OrConfig extends Config {
   constructor() {
+    super();
     this.configs = [];
     for (var c of arguments) {
       this.configs.push(c);
@@ -383,7 +385,7 @@ class OrConfig extends Config {
    l'autre n'a pas besoin d'etre evalué */
   fixed(m) {
     var fix=false;
-    res=true;
+    var res=true;
     for(var c of this.configs){
       fix=fix || (c.fixed(m) && c.evaluate(m));
       res=res && c.fixed(m);
