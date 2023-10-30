@@ -200,9 +200,9 @@ class Atom extends Instruction {
 
 
 class ActionAtom extends Atom {
-  constructor() {
+  constructor(fun) {
     super();
-    this.code = arguments[0];
+    this.code = fun;
   }
 
   action(m) {
@@ -433,7 +433,10 @@ class Generate extends Atom {
 class Control extends Instruction {
   constructor(name, body) {
     super();
-    this.eventName = name;
+    if("string"==typeof(name)){
+      name = new PosConfig(name);
+      }
+    this.config = name;
     this.body = body;
   }
 
@@ -442,14 +445,16 @@ class Control extends Instruction {
     this.body.collectValues(m);
   }
   activation(m) {
-    var event = m.getEvent(this.eventName);
-    switch (event.presence(m)) {
-      case PRESENT: return this.body.activ(m);
-      case ABSENT: return STOP;
-      default: return SUSP;
+    if(this.config.fixed(m)){
+      if(this.config.evaluate(m)){
+        return this.body.activ(m);
+        }
+      else{
+        return STOP;
+        }
+      }
+    return SUSP;
     }
-  }
-
 }
 
 class Await extends Instruction {
@@ -575,9 +580,204 @@ class PrintAtom extends Generate {
   }
 }
 
+const NOTHING=new Nothing();
+
+var SC={
+  Machine: function(){
+    return new Machine();
+    },
+  Seq: function(){
+    const s=[null];
+    for(var i of arguments){
+      if(i instanceof Seq){
+        for(var si of i.seq){
+          s.push(si);
+          }
+        }
+      else if(i instanceof Nothing){ continue; }
+      else if(i instanceof Instruction){
+        s.push(i);
+        }
+      }
+    return new (Function.prototype.bind.apply(Seq, s));
+    },
+  Par: function(){
+    const s=[null];
+    for(var i of arguments){
+      if(i instanceof Merge){
+        for(var si of i.branches){
+          s.push(si.inst);
+          }
+        }
+      else if(i instanceof Nothing){ continue; }
+      else if(i instanceof Instruction){
+        s.push(i);
+        }
+      }
+    return new (Function.prototype.bind.apply(Merge, s));
+    },
+  Action: function(f){
+    if("function"==typeof(f)){
+      return new ActionAtom(f);
+      }
+    },
+  Nothing: function(){ return NOTHING; },
+  Stop: function(){ return new Stop(); },
+  Loop: function(){
+    const s=[null];
+    for(var i of arguments){
+      if(i instanceof Seq){
+        for(var si of i.seq){
+          s.push(si);
+          }
+        }
+      else if(i instanceof Nothing){ continue; }
+      else if(i instanceof Instruction){
+        s.push(i);
+        }
+      }
+    return new Loop(new (Function.prototype.bind.apply(Seq, s)));
+    },
+ Repeat: function(n){
+    const insts=Array.prototype.slice.call(arguments,1);
+    const s=[null];
+    for(var i of insts){
+      if(i instanceof Seq){
+        for(var si of i.seq){
+          s.push(si);
+          }
+        }
+      else if(i instanceof Nothing){ continue; }
+      else if(i instanceof Instruction){
+        s.push(i);
+        }
+      }
+    if(!(isNaN(n)) && n>0){
+      return new Repeat(parseInt(n), new (Function.prototype.bind.apply(Seq, s)));
+      }
+    },
+  PresenceOf: function(name){
+    if("string"!=typeof(name)){
+      return null;
+      }
+    return new PosConfig(name);
+    },
+  And: function(){
+    const cl=[null];
+    for(var c of arguments){
+      if("string"==typeof(c)){
+        cl.push(new PosConfig(c));
+        }
+      else if(c instanceof AndConfig){
+        for(var ci of c.configs){
+          cl.push(ci);
+          }
+        }
+      else if(c instanceof Config){
+        cl.push(c);
+        }
+      }
+    return new (Function.prototype.bind.apply(AndConfig, cl));
+    },
+  Or: function(){
+    const cl=[null];
+    for(var c of arguments){
+      if("string"==typeof(c)){
+        cl.push(new PosConfig(c));
+        }
+      else if(c instanceof OrConfig){
+        for(var ci of c.configs){
+          cl.push(ci);
+          }
+        }
+      else if(c instanceof Config){
+        cl.push(c);
+        }
+      }
+    return new (Function.prototype.bind.apply(OrConfig, cl));
+    },
+  Generate: function(name, value){
+    if("string"!=typeof(name)){
+      return null;
+      }
+    return new Generate(name, value);
+    },
+  Control: function(config){
+    if("string"==typeof(config)){
+      config=new PosConfig(config);
+      }
+    const s=[null];
+    for(var i of arguments){
+      if(i instanceof Seq){
+        for(var si of i.seq){
+          s.push(si);
+          }
+        }
+      else if(i instanceof Nothing){ continue; }
+      else if(i instanceof Instruction){
+        s.push(i);
+        }
+      }
+    var p = this.Seq.apply(this, s);
+    if(config instanceof Config){
+      return new Control(config, p);
+      }
+    },
+  Await: function(config){
+    if("string"==typeof(config)){
+      config=new PosConfig(config);
+      }
+    if(config instanceof Config){
+      return new Await(config);
+      }
+    },
+  Kill: function(config, p, h){
+    if("string"==typeof(config)){
+      config=new PosConfig(config);
+      }
+    if(config instanceof Config && p instanceof Instruction
+       && (undefined==h || h instanceof Instruction)){
+      return new Until(config, p, h);
+      }
+    },
+  When: function(config, t, e){
+    if("string"==typeof(config)){
+      config=new PosConfig(config);
+      }
+    if(config instanceof Config && t instanceof Instruction
+       && (undefined==e || e instanceof Instruction)){
+      return new When(config, t, e);
+      }
+    },
+  Reset: function(config){
+    if("string"==typeof(config)){
+      config=new PosConfig(config);
+      }
+    const s=[null];
+    for(var i of arguments){
+      if(i instanceof Seq){
+        for(var si of i.seq){
+          s.push(si);
+          }
+        }
+      else if(i instanceof Nothing){ continue; }
+      else if(i instanceof Instruction){
+        s.push(i);
+        }
+      }
+    var body = this.Seq.apply(this, s);
+    if(config instanceof Config){
+      return new Reset(config, body);
+      }
+    },
+  Write: function(msg){
+    return new PrintAtom(msg);
+    }
+  };
 
 /* moudule */
 module.exports = {
+  SC: SC,
   Machine: Machine,
   Nothing: Nothing,
   Stop: Stop,
