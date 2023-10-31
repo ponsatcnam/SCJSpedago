@@ -295,6 +295,9 @@ class ActionAtom extends Atom {
     return this.terminated?NOTHING
             :this.copy();
     }
+  toString(){
+    return "SC.Action("+this.code.toString()+")";
+    }
 }
 
 //boucles

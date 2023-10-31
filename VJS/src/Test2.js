@@ -72,6 +72,14 @@ var inst = [
                     , SC.Repeat(3, SC.Seq(SC.Write("Hello"), SC.Stop(), SC.Stop(), SC.Stop(), SC.Write("World!")))),
           SC.Seq(SC.Stop(), SC.Generate('e'), SC.Action((m)=>{var val_e=m.getValuesOf('e'); console.log("e=>", val_e?val_e.toString():"nothing");}),
                  SC.Stop(), SC.Action((m)=>{var val_e=m.getValuesOf('e'); console.log("e=>", val_e?val_e.toString():"nothing");}))),
+   SC.Par(SC.FreezeOn('e'
+                    , SC.Repeat(3, SC.Seq(SC.Write("Hello"), SC.Stop(), SC.Action(() => console.log(5 * 9)), SC.Stop(), SC.Stop(), SC.Write("World!")))),
+          SC.Seq(SC.Stop(), SC.Generate('e'), SC.Action((m)=>{var val_e=m.getValuesOf('e'); console.log("e=>", val_e?val_e.toString():"nothing");}),
+                 SC.Stop(), SC.Action((m)=>{var val_e=m.getValuesOf('e'); console.log("e=>", val_e?val_e.toString():"nothing");}))),
+   SC.Par(SC.FreezeOn('e'
+                    , SC.Repeat(3, SC.Seq(SC.Write("Hello"), SC.Stop(), SC.Action(function(x){console.log(x * 9)}.bind(null, 6)), SC.Stop(), SC.Stop(), SC.Write("World!")))),
+          SC.Seq(SC.Stop(), SC.Generate('e'), SC.Action((m)=>{var val_e=m.getValuesOf('e'); console.log("e=>", val_e?val_e.toString():"nothing");}),
+                 SC.Stop(), SC.Action((m)=>{var val_e=m.getValuesOf('e'); console.log("e=>", val_e?val_e.toString():"nothing");}))),
 ];
 
 
