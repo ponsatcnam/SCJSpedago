@@ -247,3 +247,51 @@ e
 ---
 g
 
+*** Test 19
+Hello
+---
+World!
+
+*** Test 20
+Hello
+---
+---
+World!
+
+*** Test 21
+Hello
+---
+---
+---
+World!
+
+*** Test 22
+toto
+---
+toto
+---
+toto
+---
+toto
+---
+toto
+
+*** Test 23
+Hello 
+World!
+---
+Hello 
+World!
+---
+Hello 
+World!
+---
+Hello 
+World!
+---
+Hello 
+World!
+---
+Hello 
+World!
+

@@ -33,6 +33,12 @@ class Instruction {
     return res;
   }
   collectValues(m){ }
+  copy(){
+    return this;
+    }
+  rewrite(m){
+    return this;
+    }
   toString(){
     return this.constructor.name;
   }
@@ -66,6 +72,9 @@ class Machine {
   addAction(f){
     this.actions.push(f);
   }
+  getValuesOf(evtName){
+    return this.getEvent(evtName).getValues(this);
+  }
   react() {
     for(var p of this.pendding){
       this.program.add(p);
@@ -90,6 +99,12 @@ class Machine {
         console.log(m);
       }
     }
+    /*
+    Test le rewrite en observant le comportement de la machine qui a chaque
+    fin d'instant remplace le programme par sa réécriture.
+    */
+    //const remains=this.program.rewrite(m);
+    //this.program=remains;
     this.instant++;
     return res!==TERM;
   }
@@ -98,6 +113,7 @@ class Machine {
 //INSTRUCTIONS DE BASE
 class Nothing extends Instruction {
   activation(m) { return TERM; }
+  toString(){ return "SC.Nothing()"; }
 }
 
 class Stop extends Instruction {
@@ -105,6 +121,13 @@ class Stop extends Instruction {
     this.terminate();
     return STOP;
     }
+  copy(){
+    return new Stop();
+    }
+  rewrite(m){
+    return this.terminated?NOTHING:this.copy();
+    }
+  toString(){ return "SC.Stop()"; }
 }
 
 class Seq extends Instruction {
@@ -138,6 +161,39 @@ class Seq extends Instruction {
       this.idx++;
     }
     return res;
+  }
+  copy(){
+    const s=[null];
+    for (var b of this.seq) {
+      s.push(b.copy());
+    }
+    return new (Function.prototype.bind.apply(Seq, s));
+    }
+  rewrite(m){
+    const s=[null];
+    for (var i=this.idx; i<this.seq.length; i++) {
+      const tmp=this.seq[i].rewrite(m);
+      if(tmp instanceof Seq){
+        for(var si of tmp.seq){
+          if(si instanceof Nothing){
+            continue;
+          }
+          s.push(si);
+          }
+        }
+      else if(!(tmp instanceof Nothing)){
+        s.push(tmp);
+        }
+    }
+    return this.terminated?NOTHING
+            :new (Function.prototype.bind.apply(Seq,s));
+    }
+  toString(){
+    var bs=[];
+    for (var b of this.seq) {
+      bs.push(b.toString());
+    }
+    return "SC.Seq("+bs.join(", ")+")";
   }
 }
 
@@ -187,6 +243,30 @@ class Merge extends Instruction {
     }
     return res;
   }
+  copy(){
+    const s=[null];
+    for (var b of this.branches) {
+      s.push(b.inst.copy());
+    }
+    return new (Function.prototype.bind.apply(Merge, s));
+    }
+  rewrite(m){
+    const s=[null];
+    for (var i of this.branches) {
+      if(SUSP===i.status){
+        s.push(i.inst.rewrite(m));
+        }
+    }
+    return this.terminated?NOTHING
+            :new (Function.prototype.bind.apply(Merge, s));
+    }
+  toString(){
+    var bs=[];
+    for (var b of this.branches) {
+      bs.push(b.inst.toString());
+    }
+    return "SC.Merge("+bs.join(", ")+")";
+  }
 }
 
 
@@ -208,10 +288,16 @@ class ActionAtom extends Atom {
   action(m) {
     m.addAction(this.code);
   }
+  copy(){
+    return new ActionAtom(this.code);
+    }
+  rewrite(m){
+    return this.terminated?NOTHING
+            :this.copy();
+    }
 }
 
 //boucles
-
 class Loop extends Instruction {
   constructor(body) {
     super();
@@ -232,9 +318,18 @@ class Loop extends Instruction {
     this.body.reset();
     return STOP;
   }
+  copy(){
+    return new Loop(this.body.copy());
+    }
+  rewrite(m){
+    return this.terminated?NOTHING
+            :SC.Seq(this.body.rewrite(m), SC.Stop()
+                  , SC.Loop(this.body.copy()));
+    }
+  toString(){
+    return "SC.Loop("+this.body.toString()+')';
+    }
 }
-
-
 
 
 class Repeat extends Instruction {
@@ -261,6 +356,18 @@ class Repeat extends Instruction {
     }
     return res;
   }
+  copy(){
+    return new Repeat(this.num, this.body.copy());
+    }
+  rewrite(m){
+    return this.terminated?NOTHING
+            :SC.Seq(this.body.rewrite(m)
+                  , this.counter>1?SC.Stop():SC.Nothing()
+                  , SC.Repeat(this.counter-1, this.body.copy()));
+    }
+  toString(){
+    return "SC.Repeat("+this.num+", "+this.body.toString()+')';
+    }
 }
 
 
@@ -322,6 +429,7 @@ class EventEnv {
 class Config {
   fixed(m) { throw new TypeError("Do not call abstract method fixed from child."); }
   evaluate(m) { throw new TypeError("Do not call abstract method evaluate from child."); }
+  toString(){ throw new TypeError("Do not call abstract method evaluate from child."); }
 }
 
 class PosConfig extends Config {
@@ -341,6 +449,9 @@ class PosConfig extends Config {
   }
   fixed(m) {
     return this.event(m).presence(m) != UNKNOWN;
+  }
+  toString(){ // Faut encoder la chaîne !
+    return '"'+this.eventName+'"';
   }
 }
 
@@ -368,6 +479,13 @@ class AndConfig extends Config {
       res=res && c.evaluate(m);
     }
     return res;
+  }
+  toString(){
+    var cs=[];
+    for (var c of this.configs) {
+      cs.push(c.toString());
+    }
+    return 'SC.And('+cs.join(', ')+')';
   }
 }
 
@@ -400,6 +518,13 @@ class OrConfig extends Config {
     }
     return res;
   }
+  toString(){
+    var cs=[];
+    for (var c of this.configs) {
+      cs.push(c.toString());
+    }
+    return 'SC.Or('+cs.join(', ')+')';
+  }
 }
 
 
@@ -426,6 +551,20 @@ class Generate extends Atom {
     if(undefined !== this.value){
       this.emitted=true;
       }
+  }
+  copy(){
+    return new Generate(this.eventName, this.value);
+    }
+  rewrite(m){
+    return this.terminated?NOTHING:this.copy();
+    }
+  toString(){ // Faut encoder la chaîne !
+    var value=this.value;
+    if("string"==typeof(this.value)){
+      value='"'+value+'"';
+      }
+    return 'SC.Generate("'+this.eventName+'"'
+            +((undefined!==value)?(", "+value):"")+")";
   }
 }
 
@@ -455,6 +594,16 @@ class Control extends Instruction {
       }
     return SUSP;
     }
+  copy(){
+    return new Control(this.config, this.body.copy());
+    }
+  rewrite(m){
+    return this.terminated?NOTHING
+            :new Control(this.config, this.body.rewrite(m));
+    }
+  toString(){
+    return 'SC.Control('+this.config.toString()+', '+this.body.toString()+')';
+  }
 }
 
 class Await extends Instruction {
@@ -469,6 +618,15 @@ class Await extends Instruction {
     if (!this.config.fixed(m)) { return SUSP };
     if (!this.config.evaluate(m)) { return STOP };
     return TERM;
+  }
+  copy(){
+    return new Await(this.config);
+    }
+  rewrite(m){
+    return this.terminated?NOTHING:this.copy();
+    }
+  toString(){
+    return 'SC.Await('+this.config.toString()+')';
   }
 }
 
@@ -508,6 +666,19 @@ class Until extends Instruction {
     else{ this.resumeBody = true; }
     return STOP;
   }
+  copy(){
+    return new Until(this.config, this.body.copy(), this.handler.copy());
+    }
+  rewrite(m){
+    return this.terminated?NOTHING
+            :(this.activHandle?this.handler.rewrite(m)
+                              :new Until(this.config, this.body.rewrite(m)
+                                       , this.handler.copy()));
+    }
+  toString(){
+    return 'SC.Until('+this.config.toString()+', '+this.body.toString()
+            +(undefined!==this.handler?', '+this.handler.toString():'')+')';
+  }
 }
 
 //Test de configuration
@@ -539,7 +710,18 @@ class When extends Instruction {
     }
     return this.value ? this.cthen.activ(m) : this.celse.activ(m);
   }
-
+  copy(){
+    return new When(this.config, this.cthen.copy(), this.celse.copy());
+    }
+  rewrite(m){
+    return this.terminated?NOTHING
+            :(this.confEvaluated?(this.value?this.cthen:this.celse).rewrite(m)
+                              :this.copy());
+    }
+  toString(){
+    return 'SC.When('+this.config.toString()+', '+this.cthen.toString()
+            +(undefined!==this.celse?', '+this.celse.toString():'')+')';
+  }
 }
 
 class Reset extends Instruction {
@@ -571,7 +753,73 @@ class Reset extends Instruction {
     this.resumeBody = true;
     return STOP;
   }
+  copy(){
+    return new Reset(this.config, this.body.copy());
+    }
+  rewrite(m){
+    return this.terminated?NOTHING
+            :new Reset(this.config, this.body.rewrite(m));
+    }
+  toString(){
+    return 'SC.Reset('+this.config.toString()+', '+this.body.toString()+')';
+  }
+}
 
+class FreezeOn extends Instruction {
+  constructor(evtName, body) {
+    super();
+    this.eventName = evtName;
+    this.body = body;
+    this.resumeBody = true;
+    this.emitted=false;
+    this.value=null;
+  }
+
+  reset() {
+    super.reset();
+    this.body.reset();
+    this.resumeBody = true;
+    this.emitted=false;
+    this.value=null;
+  }
+  collectValues(m){
+    if(this.emitted){
+      m.getEvent(this.eventName).addValue(this.value);
+      this.value=null;
+      this.emitted=false;
+    }
+    this.body.collectValues(m);
+  }
+  activation(m) {
+    if (this.resumeBody) {
+      var res = this.body.activ(m);
+      if (res != STOP) { return res; }
+      this.resumeBody = false;
+    }
+    var event=m.getEvent(this.eventName);
+    switch(event.presence(m)){
+      case PRESENT:{
+        this.value=this.body.rewrite(m);
+        this.emitted=true;
+        return TERM;
+        }
+      case ABSENT:{
+        this.resumeBody = true;
+        return STOP;
+      }
+      default: return SUSP;
+    }
+  }
+  copy(){
+    return new FreezeOn(this.eventName, this.body.copy());
+    }
+  rewrite(m){
+    return this.terminated?NOTHING
+            :new FreezeOn(this.eventName, this.body.rewrite(m));
+    }
+  toString(){
+    return 'SC.FreezeOn("'+this.eventName+'", '+this.body.toString()+')';
+  }
 }
 
 class PrintAtom extends Generate {
@@ -772,6 +1020,25 @@ var SC={
     },
   Write: function(msg){
     return new PrintAtom(msg);
+    },
+  FreezeOn: function(evtName){
+    if("string"!=typeof(evtName)){
+        throw new TypeError("first argument must be an event name");
+      }
+    const s=[null];
+    for(var i of arguments){
+      if(i instanceof Seq){
+        for(var si of i.seq){
+          s.push(si);
+          }
+        }
+      else if(i instanceof Nothing){ continue; }
+      else if(i instanceof Instruction){
+        s.push(i);
+        }
+      }
+    var body = this.Seq.apply(this, s);
+    return new FreezeOn(evtName, body);
     }
   };
 
@@ -795,6 +1062,7 @@ module.exports = {
   Await: Await,
   Until: Until,
   When: When,
-  Reset: Reset
+  Reset: Reset,
+  FreezeOn: FreezeOn
 }
 

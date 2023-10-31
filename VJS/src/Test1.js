@@ -94,7 +94,12 @@ var inst = [
                      new Generate("f"),
                      new Stop(),
                      new Generate("f"),
-                     new Generate("g"))))
+                     new Generate("g")))),
+   new Seq(new PrintAtom("Hello"), new Seq(new Stop(), new PrintAtom("World!"))),
+   new Seq(new Seq(new Seq(new PrintAtom("Hello"), new Stop()), new Seq(new Stop(), new PrintAtom("World!")))),
+   new Seq(new Seq(new PrintAtom("Hello"), new Seq(new Stop(), new Seq(new Stop(), new Seq(new Stop(), new PrintAtom("World!")))))),
+   new Repeat(5, new PrintAtom("toto")),
+   new Repeat(6, new Merge(new PrintAtom("Hello "), new PrintAtom("World!")))
 ];
 
 

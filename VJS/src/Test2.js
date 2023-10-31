@@ -57,7 +57,21 @@ var inst = [
                                  SC.Write("g")),
                          SC.Write("e"))),
          SC.Loop(SC.Repeat(5, SC.Generate('e')) , SC.Stop()),
-         SC.Loop(SC.Stop(), SC.Generate("f"), SC.Stop(), SC.Generate("f"), SC.Generate("g")))
+         SC.Loop(SC.Stop(), SC.Generate("f"), SC.Stop(), SC.Generate("f"), SC.Generate("g"))),
+   SC.Seq(SC.Write("Hello"), SC.Seq(SC.Stop(), SC.Write("World!"))),
+   SC.Seq(SC.Seq(SC.Seq(SC.Write("Hello"), SC.Stop()), SC.Seq(SC.Stop(), SC.Write("World!")))),
+   SC.Seq(SC.Seq(SC.Write("Hello"), SC.Seq(SC.Stop(), SC.Seq(SC.Stop(), SC.Seq(SC.Stop(), SC.Write("World!")))))),
+   SC.Repeat(5, SC.Write("toto")),
+   SC.Repeat(6, SC.Par(SC.Write("Hello "), SC.Write("World!"))),
+   SC.FreezeOn('e', SC.Repeat(3, SC.Seq(SC.Write("Hello"), SC.Stop(), SC.Stop(), SC.Stop(), SC.Write("World!")))),
+   SC.Par(SC.FreezeOn('e'
+                    , SC.Repeat(3, SC.Seq(SC.Write("Hello"), SC.Stop(), SC.Stop(), SC.Stop(), SC.Write("World!")))),
+          SC.Seq(SC.Generate('e'), SC.Action((m)=>{var val_e=m.getValuesOf('e'); console.log("e=>", val_e?val_e.toString():"nothing");}),
+                 SC.Stop(), SC.Action((m)=>{var val_e=m.getValuesOf('e'); console.log("e=>", val_e?val_e.toString():"nothing");}))),
+   SC.Par(SC.FreezeOn('e'
+                    , SC.Repeat(3, SC.Seq(SC.Write("Hello"), SC.Stop(), SC.Stop(), SC.Stop(), SC.Write("World!")))),
+          SC.Seq(SC.Stop(), SC.Generate('e'), SC.Action((m)=>{var val_e=m.getValuesOf('e'); console.log("e=>", val_e?val_e.toString():"nothing");}),
+                 SC.Stop(), SC.Action((m)=>{var val_e=m.getValuesOf('e'); console.log("e=>", val_e?val_e.toString():"nothing");}))),
 ];
 
 
