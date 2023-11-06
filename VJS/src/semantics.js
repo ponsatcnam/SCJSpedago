@@ -244,9 +244,33 @@ class Merge extends Instruction {
 }
 /*
 
- head(l)=SUSP(p) ; p,E -> p_,E_ activ(Merge(tail(l)), E_) -> TERM(nothing, E__)
----------------------------------------------------------------------------
+                 l=nill
+----------------------------------------
+ activ(Merge(l), E) -> TERM(nothing, E)
+
+ l≠nill ; head(l)=SUSP(p) ; activ(p,E) -> SUSP(p_,E_) activ(Merge(tail(l)), E_) -> TERM(nothing, E__)
+------------------------------------------------------------------------------------------------------
            activ(Merge(l), E) -> SUSP(Merge([SUSP(p_)]), E__)
+
+ l≠nill ; head(l)=SUSP(p) ; activ(p,E) -> STOP(p_,E_) activ(Merge(tail(l)), E_) -> TERM(nothing, E__)
+------------------------------------------------------------------------------------------------------
+           activ(Merge(l), E) -> STOP(Merge([SUSP(p_)]), E__)
+
+ l≠nill ; head(l)=SUSP(p) ; activ(p,E) -> TERM(nothing,E_) activ(Merge(tail(l)), E_) -> TERM(nothing, E__)
+-----------------------------------------------------------------------------------------------------------
+           activ(Merge(l), E) -> TERM(nothing, E__)
+
+ l≠nill ; head(l)=SUSP(p) ; activ(p,E) -> TERM(nothing,E_) activ(Merge(tail(l)), E_) -> STOP(Merge(l'), E__)
+-------------------------------------------------------------------------------------------------------------
+           activ(Merge(l), E) -> STOP(Merge(l'), E__)
+
+ l≠nill ; head(l)=SUSP(p) ; activ(p,E) -> STOP(p_,E_) activ(Merge(tail(l)), E_) -> STOP(Merge(l'), E__)
+--------------------------------------------------------------------------------------------------------
+           activ(Merge(l), E) -> STOP(Merge(cons(STOP(p_), l')), E__)
+
+ l≠nill ; head(l)=SUSP(p) ; activ(p,E) -> SUSP(p_,E_) activ(Merge(tail(l)), E_) -> STOP(Merge(l'), E__)
+--------------------------------------------------------------------------------------------------------
+           activ(Merge(l), E) -> SUSP(Merge(cons(SUSP(p_), l')), E__)
 
 */
 
