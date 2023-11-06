@@ -248,30 +248,59 @@ class Merge extends Instruction {
 ----------------------------------------
  activ(Merge(l), E) -> TERM(nothing, E)
 
- l≠nill ; head(l)=SUSP(p) ; activ(p,E) -> SUSP(p_,E_) activ(Merge(tail(l)), E_) -> TERM(nothing, E__)
-------------------------------------------------------------------------------------------------------
+ l≠nill ; head(l)=SUSP(p) ; activ(p,E) -> SUSP(p_,E_) ; activ(Merge(tail(l)), E_) -> TERM(nothing, E__)
+--------------------------------------------------------------------------------------------------------
            activ(Merge(l), E) -> SUSP(Merge([SUSP(p_)]), E__)
 
- l≠nill ; head(l)=SUSP(p) ; activ(p,E) -> STOP(p_,E_) activ(Merge(tail(l)), E_) -> TERM(nothing, E__)
-------------------------------------------------------------------------------------------------------
+ l≠nill ; head(l)=SUSP(p) ; activ(p,E) -> STOP(p_,E_) ; activ(Merge(tail(l)), E_) -> TERM(nothing, E__)
+--------------------------------------------------------------------------------------------------------
            activ(Merge(l), E) -> STOP(Merge([SUSP(p_)]), E__)
 
- l≠nill ; head(l)=SUSP(p) ; activ(p,E) -> TERM(nothing,E_) activ(Merge(tail(l)), E_) -> TERM(nothing, E__)
------------------------------------------------------------------------------------------------------------
+ l≠nill ; head(l)=SUSP(p) ; activ(p,E) -> TERM(nothing,E_) ; activ(Merge(tail(l)), E_) -> TERM(nothing, E__)
+-------------------------------------------------------------------------------------------------------------
            activ(Merge(l), E) -> TERM(nothing, E__)
 
- l≠nill ; head(l)=SUSP(p) ; activ(p,E) -> TERM(nothing,E_) activ(Merge(tail(l)), E_) -> STOP(Merge(l'), E__)
--------------------------------------------------------------------------------------------------------------
-           activ(Merge(l), E) -> STOP(Merge(l'), E__)
+ l≠nill ; head(l)=SUSP(p) ; activ(p,E) -> TERM(nothing,E_) ; activ(Merge(tail(l)), E_) -> STOP(Merge(l_), E__)
+---------------------------------------------------------------------------------------------------------------
+           activ(Merge(l), E) -> STOP(Merge(l_), E__)
 
- l≠nill ; head(l)=SUSP(p) ; activ(p,E) -> STOP(p_,E_) activ(Merge(tail(l)), E_) -> STOP(Merge(l'), E__)
---------------------------------------------------------------------------------------------------------
-           activ(Merge(l), E) -> STOP(Merge(cons(STOP(p_), l')), E__)
+ l≠nill ; head(l)=SUSP(p) ; activ(p,E) -> STOP(p_,E_) ; activ(Merge(tail(l)), E_) -> STOP(Merge(l_), E__)
+----------------------------------------------------------------------------------------------------------
+           activ(Merge(l), E) -> STOP(Merge(cons(STOP(p_), l_)), E__)
 
- l≠nill ; head(l)=SUSP(p) ; activ(p,E) -> SUSP(p_,E_) activ(Merge(tail(l)), E_) -> STOP(Merge(l'), E__)
---------------------------------------------------------------------------------------------------------
-           activ(Merge(l), E) -> SUSP(Merge(cons(SUSP(p_), l')), E__)
+ l≠nill ; head(l)=SUSP(p) ; activ(p,E) -> SUSP(p_,E_) ; activ(Merge(tail(l)), E_) -> STOP(Merge(l_), E__)
+----------------------------------------------------------------------------------------------------------
+           activ(Merge(l), E) -> SUSP(Merge(cons(SUSP(p_), l_)), E__)
 
+ l≠nill ; head(l)=SUSP(p) ; activ(p,E) -> SUSP(p_,E_) ; activ(Merge(tail(l)), E_) -> SUSP(Merge(l_), E__)
+----------------------------------------------------------------------------------------------------------
+           activ(Merge(l), E) -> SUSP(Merge(cons(SUSP(p_), l_)), E__)
+
+ l≠nill ; head(l)=SUSP(p) ; activ(p,E) -> STOP(p_,E_) ; activ(Merge(tail(l)), E_) -> SUSP(Merge(l_), E__)
+----------------------------------------------------------------------------------------------------------
+           activ(Merge(l), E) -> SUSP(Merge(cons(STOP(p_), l_)), E__)
+
+ l≠nill ; head(l)=SUSP(p) ; activ(p,E) -> TERM(nothing,E_) ; activ(Merge(tail(l)), E_) -> SUSP(Merge(l_), E__)
+---------------------------------------------------------------------------------------------------------------
+           activ(Merge(l), E) -> SUSP(Merge(l_), E__)
+
+ l≠nill ; head(l)=STOP(p) ; activ(Merge(tail(l)), E) -> SUSP(Merge(l_), E_)
+----------------------------------------------------------------------------
+           activ(Merge(l), E) -> SUSP(Merge(cons(STOP(p),l_)), E_)
+
+ l≠nill ; head(l)=STOP(p) ; activ(Merge(tail(l)), E) -> STOP(Merge(l_), E_)
+----------------------------------------------------------------------------
+           activ(Merge(l), E) -> STOP(Merge(cons(STOP(p),l_)), E_)
+
+ l≠nill ; head(l)=STOP(p) ; activ(Merge(tail(l)), E) -> TERM(Merge(l_), E_)
+----------------------------------------------------------------------------
+           activ(Merge(l), E) -> STOP(Merge([STOP(p)]), E_)
+
+ l≠nill ; (head(l)=SUSP(p) || head(l)=STOP(p))  ; eoi(p,E) -> p_ ; eoi(Merge(tail(l)), E) -> Merge(l_)
+-------------------------------------------------------------------------------------------------------
+           eoi(Merge(l), E) -> Merge(cons(SUSP(p_), l_)), E_)
+
+Si l=nill on peut pas avoir d'appel sur eoi()
 */
 
 class Atom extends Instruction {
