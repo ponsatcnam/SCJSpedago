@@ -761,7 +761,7 @@ class Reset extends Instruction {
     }
   rewrite(m){
     return this.terminated?NOTHING
-            :new Reset(this.config, this.body.rewrite(m));
+            :new Until(this.config, this.body.rewrite(m), new Reset(this.config, this.body.reset()));
     }
   toString(){
     return 'SC.Reset('+this.config.toString()+', '+this.body.toString()+')';
