@@ -98,6 +98,10 @@ instant(t,⌀) -> u
 ---------------------------------------
        instant(t,E) -> t_
 
+     activ(t, E) -> TERM(t_, E_)
+-----------------------------------------
+ activ(close(t), E) -> TERM(nothing, E_)
+
 activ(t, E) -> SUSP(t_, E_) ; E=E_ ; eoi(t_, E) -> t__
 ---------------------------------------------------------
         activ(close(t), E) -> STOP(t__, E)
@@ -121,6 +125,8 @@ class Nothing extends Instruction {
   activation(m) { return TERM; }
 }
 /*
+               true
+-------------------------------------
 activ(nothing, E) -> TERM(nothing, E)
 */
 
@@ -132,6 +138,8 @@ class Stop extends Instruction {
 }
 
 /*
+            true
+----------------------------------
 activ(stop, E) -> STOP(nothing, E)
 */
 
@@ -181,6 +189,14 @@ activ(seq(l), E) -> STOP(seq(cons(t_, tail(l))), E_)
  l≠nil ; activ(head(l),E)->TERM(nothing, E_) ; activ(seq(tail(l)), E_) -> SUSP(u, E__)
 ---------------------------------------------------------------------------------------
                       activ(seq(l), E) -> SUSP(u, E__)
+
+ l≠nil ; activ(head(l),E)->TERM(nothing, E_) ; activ(seq(tail(l)), E_) -> STOP(u, E__)
+---------------------------------------------------------------------------------------
+                      activ(seq(l), E) -> STOP(u, E__)
+
+ l≠nil ; activ(head(l),E)->TERM(nothing, E_) ; activ(seq(tail(l)), E_) -> TERM(u, E__)
+---------------------------------------------------------------------------------------
+                      activ(seq(l), E) -> TERM(nothing, E__)
 
                   l=nil
 ----------------------------------------
@@ -290,18 +306,22 @@ class Merge extends Instruction {
 
  l≠nill ; head(l)=STOP(p) ; activ(Merge(tail(l)), E) -> STOP(Merge(l_), E_)
 ----------------------------------------------------------------------------
-           activ(Merge(l), E) -> STOP(Merge(cons(STOP(p),l_)), E_)
+           activ(Merge(l), E) -> STOP(Merge(cons(SUSP(p),l_)), E_)
 
  l≠nill ; head(l)=STOP(p) ; activ(Merge(tail(l)), E) -> TERM(Merge(l_), E_)
 ----------------------------------------------------------------------------
-           activ(Merge(l), E) -> STOP(Merge([STOP(p)]), E_)
+           activ(Merge(l), E) -> STOP(Merge(cons(SUSP(p), nil)), E_)
 
- l≠nill ; (head(l)=SUSP(p) || head(l)=STOP(p))  ; eoi(p,E) -> p_ ; eoi(Merge(tail(l)), E) -> Merge(l_)
--------------------------------------------------------------------------------------------------------
+ l≠nill ; head(l)=SUSP(p) ; eoi(p,E) -> p_ ; eoi(Merge(tail(l)), E) -> Merge(l_)
+---------------------------------------------------------------------------------
            eoi(Merge(l), E) -> Merge(cons(SUSP(p_), l_)), E_)
 
-Si l=nill on peut pas avoir d'appel sur eoi()
+ l≠nill ; head(l)=STOP(p) ; eoi(Merge(tail(l)), E) -> Merge(l_)
+----------------------------------------------------------------
+       eoi(Merge(l), E) -> Merge(cons(SUSP(p), l_)), E_)
+
 */
+//Si l=nill on peut pas avoir d'appel sur eoi()
 
 class Atom extends Instruction {
   action(m) { }
@@ -322,7 +342,9 @@ class ActionAtom extends Atom {
   }
 }
 /*
-activ(atom(a), E) -> TERM(nothing, E)
+                true
+---------------------------------------
+ activ(atom(a), E) -> TERM(nothing, E)
 */
 
 //boucles
@@ -440,7 +462,9 @@ class Generate extends Atom {
   }
 }
 /*
-activ(generate(nom), E) -> TERM(nothing, E U {nom})
+                       true
+----------------------------------------------------
+ activ(generate(nom), E) -> TERM(nothing, E U {nom})
 */
 
 
@@ -468,6 +492,8 @@ class Await extends Instruction {
 --------------------------------------------
  activ(await(nom), E) -> SUSP(await(nom), E)
 
+              true
+---------------------------------
  eoi(await(nom), E) -> await(nom)
 
 */
@@ -479,7 +505,6 @@ class PrintAtom extends Generate {
 }
 
 
-/* moudule */
 module.exports = {
   Machine: Machine,
   Nothing: Nothing,
