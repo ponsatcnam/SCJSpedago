@@ -90,33 +90,33 @@ instant(t,⌀) -> u
 -----------------
   react(t) -> u
 
- activ(close(t), E) -> TERM(nothing, E_)
+ activ(Close(t), E) -> TERM(Nothing, E_)
 ---------------------------------------
-       instant(t,E) -> nothing
+       instant(t,E) -> Nothing
 
- activ(close(t), E) -> STOP(t_, E_)
+ activ(Close(t), E) -> STOP(t_, E_)
 ---------------------------------------
        instant(t,E) -> t_
 
      activ(t, E) -> TERM(t_, E_)
 -----------------------------------------
- activ(close(t), E) -> TERM(nothing, E_)
+ activ(Close(t), E) -> TERM(Nothing, E_)
 
-activ(t, E) -> SUSP(t_, E_) ; E=E_ ; eoi(t_, E) -> t__
----------------------------------------------------------
-        activ(close(t), E) -> STOP(t__, E)
+ activ(t, E) -> SUSP(t_, E_) ; E=E_ ; eoi(t_, E) -> STOP(t__, E)
+----------------------------------------------------------------
+        activ(Close(t), E) -> STOP(t__, E)
 
-activ(t, E) -> SUSP(t_, E_) ; E≠E_ ; activ(close(t_), E_) -> STOP(t__, E__)
+activ(t, E) -> SUSP(t_, E_) ; E≠E_ ; activ(Close(t_), E_) -> STOP(t__, E__)
 ---------------------------------------------------------------------------
-        activ(close(t), E) -> STOP(t__, E__)
+        activ(Close(t), E) -> STOP(t__, E__)
 
-activ(t, E) -> SUSP(t_, E_) ; E≠E_ ; activ(close(t_), E_) -> TERM(t__, E__)
+activ(t, E) -> SUSP(t_, E_) ; E≠E_ ; activ(Close(t_), E_) -> TERM(t__, E__)
 ---------------------------------------------------------------------------
-        activ(close(t), E) -> STOP(t__, E__)
+        activ(Close(t), E) -> STOP(t__, E__)
 
     activ(t, E) -> STOP(t_, E_)
 ------------------------------------
- activ(close(t), E) -> STOP(t_, E_)
+ activ(Close(t), E) -> STOP(t_, E_)
 
 */
 
@@ -127,7 +127,7 @@ class Nothing extends Instruction {
 /*
                true
 -------------------------------------
-activ(nothing, E) -> TERM(nothing, E)
+activ(Nothing, E) -> TERM(Nothing, E)
 */
 
 class Stop extends Instruction {
@@ -140,7 +140,7 @@ class Stop extends Instruction {
 /*
             true
 ----------------------------------
-activ(stop, E) -> STOP(nothing, E)
+activ(Stop, E) -> STOP(Nothing, E)
 */
 
 class Seq extends Instruction {
@@ -178,37 +178,37 @@ class Seq extends Instruction {
 }
 /*
 
-      l≠nil ; activ(head(l),E)->SUSP(t_,E_)
+      isNotEmpty(l) ; activ(head(l),E)->SUSP(t_,E_)
 ----------------------------------------------------
-activ(seq(l), E) -> SUSP(seq(cons(t_, tail(l))), E_)
+activ(Seq(l), E) -> SUSP(Seq(cons(t_, tail(l))), E_)
 
-      l≠nil ; activ(head(l),E)->STOP(t_,E_)
+      isNotEmpty(l) ; activ(head(l),E)->STOP(t_,E_)
 ----------------------------------------------------
-activ(seq(l), E) -> STOP(seq(cons(t_, tail(l))), E_)
+activ(Seq(l), E) -> STOP(Seq(cons(t_, tail(l))), E_)
 
- l≠nil ; activ(head(l),E)->TERM(nothing, E_) ; activ(seq(tail(l)), E_) -> SUSP(u, E__)
+ isNotEmpty(l) ; activ(head(l),E)->TERM(Nothing, E_) ; activ(Seq(tail(l)), E_) -> SUSP(u, E__)
 ---------------------------------------------------------------------------------------
-                      activ(seq(l), E) -> SUSP(u, E__)
+                      activ(Seq(l), E) -> SUSP(u, E__)
 
- l≠nil ; activ(head(l),E)->TERM(nothing, E_) ; activ(seq(tail(l)), E_) -> STOP(u, E__)
+ isNotEmpty(l) ; activ(head(l),E)->TERM(Nothing, E_) ; activ(Seq(tail(l)), E_) -> STOP(u, E__)
 ---------------------------------------------------------------------------------------
-                      activ(seq(l), E) -> STOP(u, E__)
+                      activ(Seq(l), E) -> STOP(u, E__)
 
- l≠nil ; activ(head(l),E)->TERM(nothing, E_) ; activ(seq(tail(l)), E_) -> TERM(u, E__)
+ isNotEmpty(l) ; activ(head(l),E)->TERM(Nothing, E_) ; activ(Seq(tail(l)), E_) -> TERM(u, E__)
 ---------------------------------------------------------------------------------------
-                      activ(seq(l), E) -> TERM(nothing, E__)
+                      activ(Seq(l), E) -> TERM(Nothing, E__)
 
-                  l=nil
+                  isEmpty(l)
 ----------------------------------------
-  activ(seq(l), E) -> TERM(nothing, E)
+  activ(Seq(l), E) -> TERM(Nothing, E)
 
 
 On doit pouvoir déconditionnaliser tout de suite car forcément l DOIT être différent de nil...
 C'est défensif...
 
-                   l≠nil
+       l≠nil ; eoi(head(l), E) -> STOP(l_, E)
 ----------------------------------------------------
-  eoi(seq(l), E) -> seq(cons(eoi(head(l), tail(l)))
+  eoi(Seq(l), E) -> STOP(Seq(cons(l_, tail(l))), E)
 */
 
 
@@ -262,63 +262,63 @@ class Merge extends Instruction {
 
                  l=nill
 ----------------------------------------
- activ(Merge(l), E) -> TERM(nothing, E)
+ activ(Par(l), E) -> TERM(Nothing, E)
 
- l≠nill ; head(l)=SUSP(p) ; activ(p,E) -> SUSP(p_,E_) ; activ(Merge(tail(l)), E_) -> TERM(nothing, E__)
+ l≠nill ; head(l)=_SUSP(p) ; activ(p,E) -> SUSP(p_,E_) ; activ(Par(tail(l)), E_) -> TERM(Nothing, E__)
 --------------------------------------------------------------------------------------------------------
-           activ(Merge(l), E) -> SUSP(Merge([SUSP(p_)]), E__)
+           activ(Par(l), E) -> SUSP(Par([_SUSP(p_)]), E__)
 
- l≠nill ; head(l)=SUSP(p) ; activ(p,E) -> STOP(p_,E_) ; activ(Merge(tail(l)), E_) -> TERM(nothing, E__)
+ l≠nill ; head(l)=_SUSP(p) ; activ(p,E) -> STOP(p_,E_) ; activ(Par(tail(l)), E_) -> TERM(Nothing, E__)
 --------------------------------------------------------------------------------------------------------
-           activ(Merge(l), E) -> STOP(Merge([SUSP(p_)]), E__)
+           activ(Par(l), E) -> STOP(Par([_SUSP(p_)]), E__)
 
- l≠nill ; head(l)=SUSP(p) ; activ(p,E) -> TERM(nothing,E_) ; activ(Merge(tail(l)), E_) -> TERM(nothing, E__)
+ l≠nill ; head(l)=_SUSP(p) ; activ(p,E) -> TERM(Nothing,E_) ; activ(Par(tail(l)), E_) -> TERM(Nothing, E__)
 -------------------------------------------------------------------------------------------------------------
-           activ(Merge(l), E) -> TERM(nothing, E__)
+           activ(Par(l), E) -> TERM(Nothing, E__)
 
- l≠nill ; head(l)=SUSP(p) ; activ(p,E) -> TERM(nothing,E_) ; activ(Merge(tail(l)), E_) -> STOP(Merge(l_), E__)
+ l≠nill ; head(l)=_SUSP(p) ; activ(p,E) -> TERM(Nothing,E_) ; activ(Par(tail(l)), E_) -> STOP(Par(l_), E__)
 ---------------------------------------------------------------------------------------------------------------
-           activ(Merge(l), E) -> STOP(Merge(l_), E__)
+           activ(Par(l), E) -> STOP(Par(l_), E__)
 
- l≠nill ; head(l)=SUSP(p) ; activ(p,E) -> STOP(p_,E_) ; activ(Merge(tail(l)), E_) -> STOP(Merge(l_), E__)
+ l≠nill ; head(l)=_SUSP(p) ; activ(p,E) -> STOP(p_,E_) ; activ(Par(tail(l)), E_) -> STOP(Par(l_), E__)
 ----------------------------------------------------------------------------------------------------------
-           activ(Merge(l), E) -> STOP(Merge(cons(STOP(p_), l_)), E__)
+           activ(Par(l), E) -> STOP(Par(cons(_STOP(p_), l_)), E__)
 
- l≠nill ; head(l)=SUSP(p) ; activ(p,E) -> SUSP(p_,E_) ; activ(Merge(tail(l)), E_) -> STOP(Merge(l_), E__)
+ l≠nill ; head(l)=_SUSP(p) ; activ(p,E) -> SUSP(p_,E_) ; activ(Par(tail(l)), E_) -> STOP(Par(l_), E__)
 ----------------------------------------------------------------------------------------------------------
-           activ(Merge(l), E) -> SUSP(Merge(cons(SUSP(p_), l_)), E__)
+           activ(Par(l), E) -> SUSP(Par(cons(_SUSP(p_), l_)), E__)
 
- l≠nill ; head(l)=SUSP(p) ; activ(p,E) -> SUSP(p_,E_) ; activ(Merge(tail(l)), E_) -> SUSP(Merge(l_), E__)
+ l≠nill ; head(l)=_SUSP(p) ; activ(p,E) -> SUSP(p_,E_) ; activ(Par(tail(l)), E_) -> SUSP(Par(l_), E__)
 ----------------------------------------------------------------------------------------------------------
-           activ(Merge(l), E) -> SUSP(Merge(cons(SUSP(p_), l_)), E__)
+           activ(Par(l), E) -> SUSP(Par(cons(_SUSP(p_), l_)), E__)
 
- l≠nill ; head(l)=SUSP(p) ; activ(p,E) -> STOP(p_,E_) ; activ(Merge(tail(l)), E_) -> SUSP(Merge(l_), E__)
+ l≠nill ; head(l)=_SUSP(p) ; activ(p,E) -> STOP(p_,E_) ; activ(Par(tail(l)), E_) -> SUSP(Par(l_), E__)
 ----------------------------------------------------------------------------------------------------------
-           activ(Merge(l), E) -> SUSP(Merge(cons(STOP(p_), l_)), E__)
+           activ(Par(l), E) -> SUSP(Par(cons(_STOP(p_), l_)), E__)
 
- l≠nill ; head(l)=SUSP(p) ; activ(p,E) -> TERM(nothing,E_) ; activ(Merge(tail(l)), E_) -> SUSP(Merge(l_), E__)
+ l≠nill ; head(l)=_SUSP(p) ; activ(p,E) -> TERM(Nothing,E_) ; activ(Par(tail(l)), E_) -> SUSP(Par(l_), E__)
 ---------------------------------------------------------------------------------------------------------------
-           activ(Merge(l), E) -> SUSP(Merge(l_), E__)
+           activ(Par(l), E) -> SUSP(Par(l_), E__)
 
- l≠nill ; head(l)=STOP(p) ; activ(Merge(tail(l)), E) -> SUSP(Merge(l_), E_)
+ l≠nill ; head(l)=_STOP(p) ; activ(Par(tail(l)), E) -> SUSP(Par(l_), E_)
 ----------------------------------------------------------------------------
-           activ(Merge(l), E) -> SUSP(Merge(cons(STOP(p),l_)), E_)
+           activ(Par(l), E) -> SUSP(Par(cons(_STOP(p),l_)), E_)
 
- l≠nill ; head(l)=STOP(p) ; activ(Merge(tail(l)), E) -> STOP(Merge(l_), E_)
+ l≠nill ; head(l)=_STOP(p) ; activ(Par(tail(l)), E) -> STOP(Par(l_), E_)
 ----------------------------------------------------------------------------
-           activ(Merge(l), E) -> STOP(Merge(cons(SUSP(p),l_)), E_)
+           activ(Par(l), E) -> STOP(Par(cons(_SUSP(p),l_)), E_)
 
- l≠nill ; head(l)=STOP(p) ; activ(Merge(tail(l)), E) -> TERM(Merge(l_), E_)
+ l≠nill ; head(l)=_STOP(p) ; activ(Par(tail(l)), E) -> TERM(Par(l_), E_)
 ----------------------------------------------------------------------------
-           activ(Merge(l), E) -> STOP(Merge(cons(SUSP(p), nil)), E_)
+           activ(Par(l), E) -> STOP(Par(cons(_SUSP(p), nil)), E_)
 
- l≠nill ; head(l)=SUSP(p) ; eoi(p,E) -> p_ ; eoi(Merge(tail(l)), E) -> Merge(l_)
----------------------------------------------------------------------------------
-           eoi(Merge(l), E) -> Merge(cons(SUSP(p_), l_)), E_)
+ l≠nill ; head(l)=_SUSP(p) ; eoi(p, E) -> STOP(p_, E) ; eoi(Par(tail(l)), E) -> STOP(Par(l_), E)
+------------------------------------------------------------------------------------------------
+           eoi(Par(l), E) -> STOP(Par(cons(_SUSP(p_), l_)), E)
 
- l≠nill ; head(l)=STOP(p) ; eoi(Merge(tail(l)), E) -> Merge(l_)
-----------------------------------------------------------------
-       eoi(Merge(l), E) -> Merge(cons(SUSP(p), l_)), E_)
+ l≠nill ; head(l)=_STOP(p) ; eoi(Par(tail(l)), E) -> STOP(Par(l_), E)
+---------------------------------------------------------------------
+       eoi(Par(l), E) -> STOP(Par(cons(_SUSP(p), l_)), E)
 
 */
 //Si l=nill on peut pas avoir d'appel sur eoi()
@@ -344,7 +344,7 @@ class ActionAtom extends Atom {
 /*
                 true
 ---------------------------------------
- activ(atom(a), E) -> TERM(nothing, E)
+ activ(Atom(a), E) -> TERM(Nothing, E)
 */
 
 //boucles
@@ -372,13 +372,13 @@ class Loop extends Instruction {
 }
 /*
 
- activ(seq(cons(p,[stop])), E) -> SUSP(seq(cons(p_, [stop])), E_)
+ activ(Seq(cons(p,[Stop])), E) -> SUSP(Seq(cons(p_, [Stop])), E_)
 ------------------------------------------------------------------
-  activ(Loop(p), E) -> SUSP(seq(cons(p_, [stop, Loop(p)])), E_)
+  activ(Loop(p), E) -> SUSP(Seq(cons(p_, [Stop, Loop(p)])), E_)
 
-    activ(seq(cons(p,[stop])), E) -> STOP(u, E_)
+    activ(Seq(cons(p,[Stop])), E) -> STOP(u, E_)
 --------------------------------------------------------
- activ(Loop(p), E) -> SUSP(seq(cons(u, [Loop(p)])), E_)
+ activ(Loop(p), E) -> SUSP(Seq(cons(u, [Loop(p)])), E_)
 
 */
 
@@ -464,7 +464,7 @@ class Generate extends Atom {
 /*
                        true
 ----------------------------------------------------
- activ(generate(nom), E) -> TERM(nothing, E U {nom})
+ activ(Generate(nom), E) -> TERM(Nothing, E U {nom})
 */
 
 
@@ -486,15 +486,15 @@ class Await extends Instruction {
 
                 nom ∈ E 
 ------------------------------------------
- activ(await(nom), E) -> TERM(nothing, E)
+ activ(Await(nom), E) -> TERM(Nothing, E)
 
-                   nom ∉ E 
+                  nom ∉ E 
 --------------------------------------------
- activ(await(nom), E) -> SUSP(await(nom), E)
+ activ(Await(nom), E) -> SUSP(Await(nom), E)
 
-              true
----------------------------------
- eoi(await(nom), E) -> await(nom)
+                   true
+-------------------------------------------
+ eoi(Await(nom), E) -> STOP(Await(nom), E)
 
 */
 
