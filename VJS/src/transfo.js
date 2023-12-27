@@ -198,7 +198,7 @@ function activ(term, E){
         console.log(`        }`);
         }
       }
-    console.log(`      break;
+    console.log(`      throw new Error("No rule for that term");
       }`);
     }
   //console.log('eoi:', eoi_cases);
