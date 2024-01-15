@@ -90,9 +90,9 @@ instant(t,⌀) -> u
 -----------------
   react(t) -> u
 
- activ(Close(t), E) -> TERM(Nothing, E_)
+ activ(Close(t), E) -> TERM(Nothing(), E_)
 ---------------------------------------
-       instant(t,E) -> Nothing
+       instant(t,E) -> Nothing()
 
  activ(Close(t), E) -> STOP(t_, E_)
 ---------------------------------------
@@ -100,7 +100,7 @@ instant(t,⌀) -> u
 
      activ(t, E) -> TERM(t_, E_)
 -----------------------------------------
- activ(Close(t), E) -> TERM(Nothing, E_)
+ activ(Close(t), E) -> TERM(Nothing(), E_)
 
  activ(t, E) -> SUSP(t_, E_) ; E=E_ ; eoi(t_, E) -> STOP(t__, E)
 ----------------------------------------------------------------
@@ -127,7 +127,7 @@ class Nothing extends Instruction {
 /*
                true
 -------------------------------------
-activ(Nothing, E) -> TERM(Nothing, E)
+activ(Nothing(), E) -> TERM(Nothing(), E)
 */
 
 class Stop extends Instruction {
@@ -140,7 +140,7 @@ class Stop extends Instruction {
 /*
             true
 ----------------------------------
-activ(Stop, E) -> STOP(Nothing, E)
+activ(Stop(), E) -> STOP(Nothing(), E)
 */
 
 class Seq extends Instruction {
@@ -186,21 +186,21 @@ activ(Seq(l), E) -> SUSP(Seq(cons(t_, tail(l))), E_)
 ----------------------------------------------------
 activ(Seq(l), E) -> STOP(Seq(cons(t_, tail(l))), E_)
 
- isNotEmpty(l) ; activ(head(l),E)->TERM(Nothing, E_) ; activ(Seq(tail(l)), E_) -> SUSP(u, E__)
+ isNotEmpty(l) ; activ(head(l),E)->TERM(Nothing(), E_) ; activ(Seq(tail(l)), E_) -> SUSP(u, E__)
 ---------------------------------------------------------------------------------------
                       activ(Seq(l), E) -> SUSP(u, E__)
 
- isNotEmpty(l) ; activ(head(l),E)->TERM(Nothing, E_) ; activ(Seq(tail(l)), E_) -> STOP(u, E__)
+ isNotEmpty(l) ; activ(head(l),E)->TERM(Nothing(), E_) ; activ(Seq(tail(l)), E_) -> STOP(u, E__)
 ---------------------------------------------------------------------------------------
                       activ(Seq(l), E) -> STOP(u, E__)
 
- isNotEmpty(l) ; activ(head(l),E)->TERM(Nothing, E_) ; activ(Seq(tail(l)), E_) -> TERM(u, E__)
+ isNotEmpty(l) ; activ(head(l),E)->TERM(Nothing(), E_) ; activ(Seq(tail(l)), E_) -> TERM(u, E__)
 ---------------------------------------------------------------------------------------
-                      activ(Seq(l), E) -> TERM(Nothing, E__)
+                      activ(Seq(l), E) -> TERM(Nothing(), E__)
 
                   isEmpty(l)
 ----------------------------------------
-  activ(Seq(l), E) -> TERM(Nothing, E)
+  activ(Seq(l), E) -> TERM(Nothing(), E)
 
 
 On doit pouvoir déconditionnaliser tout de suite car forcément l DOIT être différent de nil...
@@ -262,21 +262,21 @@ class Merge extends Instruction {
 
                  l=nill
 ----------------------------------------
- activ(Par(l), E) -> TERM(Nothing, E)
+ activ(Par(l), E) -> TERM(Nothing(), E)
 
- l≠nill ; head(l)=_SUSP(p) ; activ(p,E) -> SUSP(p_,E_) ; activ(Par(tail(l)), E_) -> TERM(Nothing, E__)
+ l≠nill ; head(l)=_SUSP(p) ; activ(p,E) -> SUSP(p_,E_) ; activ(Par(tail(l)), E_) -> TERM(Nothing(), E__)
 --------------------------------------------------------------------------------------------------------
            activ(Par(l), E) -> SUSP(Par([_SUSP(p_)]), E__)
 
- l≠nill ; head(l)=_SUSP(p) ; activ(p,E) -> STOP(p_,E_) ; activ(Par(tail(l)), E_) -> TERM(Nothing, E__)
+ l≠nill ; head(l)=_SUSP(p) ; activ(p,E) -> STOP(p_,E_) ; activ(Par(tail(l)), E_) -> TERM(Nothing(), E__)
 --------------------------------------------------------------------------------------------------------
            activ(Par(l), E) -> STOP(Par([_SUSP(p_)]), E__)
 
- l≠nill ; head(l)=_SUSP(p) ; activ(p,E) -> TERM(Nothing,E_) ; activ(Par(tail(l)), E_) -> TERM(Nothing, E__)
+ l≠nill ; head(l)=_SUSP(p) ; activ(p,E) -> TERM(Nothing(),E_) ; activ(Par(tail(l)), E_) -> TERM(Nothing(), E__)
 -------------------------------------------------------------------------------------------------------------
-           activ(Par(l), E) -> TERM(Nothing, E__)
+           activ(Par(l), E) -> TERM(Nothing(), E__)
 
- l≠nill ; head(l)=_SUSP(p) ; activ(p,E) -> TERM(Nothing,E_) ; activ(Par(tail(l)), E_) -> STOP(Par(l_), E__)
+ l≠nill ; head(l)=_SUSP(p) ; activ(p,E) -> TERM(Nothing(),E_) ; activ(Par(tail(l)), E_) -> STOP(Par(l_), E__)
 ---------------------------------------------------------------------------------------------------------------
            activ(Par(l), E) -> STOP(Par(l_), E__)
 
@@ -296,7 +296,7 @@ class Merge extends Instruction {
 ----------------------------------------------------------------------------------------------------------
            activ(Par(l), E) -> SUSP(Par(cons(_STOP(p_), l_)), E__)
 
- l≠nill ; head(l)=_SUSP(p) ; activ(p,E) -> TERM(Nothing,E_) ; activ(Par(tail(l)), E_) -> SUSP(Par(l_), E__)
+ l≠nill ; head(l)=_SUSP(p) ; activ(p,E) -> TERM(Nothing(),E_) ; activ(Par(tail(l)), E_) -> SUSP(Par(l_), E__)
 ---------------------------------------------------------------------------------------------------------------
            activ(Par(l), E) -> SUSP(Par(l_), E__)
 
@@ -344,7 +344,7 @@ class ActionAtom extends Atom {
 /*
                 true
 ---------------------------------------
- activ(Atom(a), E) -> TERM(Nothing, E)
+ activ(Atom(a), E) -> TERM(Nothing(), E)
 */
 
 //boucles
@@ -372,13 +372,13 @@ class Loop extends Instruction {
 }
 /*
 
- activ(Seq(cons(p,[Stop])), E) -> SUSP(Seq(cons(p_, [Stop])), E_)
+ activ(Seq(cons(p,[Stop()])), E) -> SUSP(Seq(cons(p_, [Stop()])), E_)
 ------------------------------------------------------------------
-  activ(Loop(p), E) -> SUSP(Seq(cons(p_, [Stop, Loop(p)])), E_)
+  activ(Loop(p), E) -> SUSP(Seq(cons(p_, [Stop(), Loop(p)])), E_)
 
-    activ(Seq(cons(p,[Stop])), E) -> STOP(u, E_)
+    activ(Seq(cons(p,[Stop()])), E) -> STOP(u, E_)
 --------------------------------------------------------
- activ(Loop(p), E) -> SUSP(Seq(cons(u, [Loop(p)])), E_)
+ activ(Loop(p), E) -> STOP(Seq(cons(u, [Loop(p)])), E_)
 
 */
 
@@ -464,7 +464,7 @@ class Generate extends Atom {
 /*
                        true
 ----------------------------------------------------
- activ(Generate(nom), E) -> TERM(Nothing, E U {nom})
+ activ(Generate(nom), E) -> TERM(Nothing(), E U {nom})
 */
 
 
@@ -486,7 +486,7 @@ class Await extends Instruction {
 
                 nom ∈ E 
 ------------------------------------------
- activ(Await(nom), E) -> TERM(Nothing, E)
+ activ(Await(nom), E) -> TERM(Nothing(), E)
 
                   nom ∉ E 
 --------------------------------------------
