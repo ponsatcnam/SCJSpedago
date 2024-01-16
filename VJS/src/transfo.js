@@ -203,6 +203,7 @@ function Set_add(E, set){
 function head(l){
   return l[0];
   }
+const nil=[];
 function tail(l){
   let res=[];
   for(var i in l){
@@ -366,38 +367,48 @@ ${conc}
     }
   }`);
   console.log(`
-react(Nothing());
+console.log('*** Test Nothing()');
+var term=react(Nothing());
+term=react(term);
 console.log('');
-var term=react(Stop());
+console.log('*** Test Stop()');
+term=react(Stop());
+term=react(term);
 console.log('');
+console.log('*** Test Generate("e")');
 term=react(Generate("e"));
+term=react(term);
 console.log('');
+console.log('*** Test Seq(Generate("e"), Stop())');
 term=react(Seq([Generate("e"), Stop()]));
-console.log('');
 term=react(term);
 console.log('');
+console.log('*** Test Seq(Generate("e"), Stop(), Stop())');
 term=react(Seq([Generate("e"), Stop(), Stop()]));
-console.log('');
+term=react(term);
 term=react(term);
 console.log('');
-term=react(term);
-console.log('');
+console.log('*** Test Seq(Generate("e"), Stop(), Stop(), Generate("e"), Generate("f"), Stop())');
 term=react(Seq([Generate("e"), Stop(), Stop(), Generate('e'), Generate('f'), Stop()]));
-console.log('');
+term=react(term);
+term=react(term);
 term=react(term);
 console.log('');
-term=react(term);
-console.log('');
-term=react(term);
-console.log('');
+console.log('*** Test Par(Seq(Generate("e"), Stop(), Stop(), Generate("e"), Generate("f"), Stop()))');
 term=react(Par([_SUSP(Seq([Generate("e"), Stop(), Stop(), Generate('e'), Generate('f'), Stop()]))]));
-console.log('');
+term=react(term);
+term=react(term);
+term=react(term);
 term=react(term);
 console.log('');
-term=react(term);
+
+console.log(\`*** Test Par(Seq(Generate("e"), Stop(), Stop(), Generate("e"), Generate("f"), Stop())
+, Seq(Stop(), Await("e"), Generate("h"), Stop(), Generate("i")))\`);
+term=react(Par([_SUSP(Seq([Generate("e"), Stop(), Stop(), Generate('e'), Generate('f'), Stop()]))
+   , _SUSP(Seq([Stop(), Await("e"), Generate("h"), Stop(), Generate("i")]))
+     ]));
 console.log('');
 term=react(term);
-console.log('');
   `);
   });
 

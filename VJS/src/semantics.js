@@ -262,7 +262,7 @@ class Merge extends Instruction {
 
                  isEmpty(l)
 ----------------------------------------
- activ(Par(l), E) -> TERM(Nothing(), E)
+ activ(Par(l), E) -> TERM(Par(nil), E)
 
  isNotEmpty(l) ; head(l)=_SUSP(p) ; activ(p,E) -> SUSP(p_,E_) ; activ(Par(tail(l)), E_) -> TERM(Nothing(), E__)
 --------------------------------------------------------------------------------------------------------
@@ -320,8 +320,10 @@ class Merge extends Instruction {
 ---------------------------------------------------------------------
        eoi(Par(l), E) -> STOP(Par(cons(_SUSP(p), l_)), E)
 
+          isEmpty(l)
+-------------------------------------
+ eoi(Par(l), E) -> STOP(Par(nil), E)
 */
-//Si l=nill on peut pas avoir d'appel sur eoi()
 
 class Atom extends Instruction {
   action(m) { }
