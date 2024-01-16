@@ -38,7 +38,7 @@ function syn_extract(str){
   const names=term.match(/(Nothing|[tpl][0-9]*[_]+|u[0-9]*[_]*)/g);
 
   const E=couple.substr(ts+1).trim();
-  console.error(str, "->", m, m[1], "term=", term, 'E=', E, "names=", names);
+  //console.error(str, "->", m, m[1], "term=", term, 'E=', E, "names=", names);
   var t=`${term}`;
   if(term.startsWith("Nothing")){
     t=`{ a0: _Nope }`;
@@ -87,6 +87,9 @@ fs.readFile('semantics.js', 'utf8', function(err, data){
         rule.hyp[idx]=rule.hyp[idx].replace(/(\w+)\s*([∈∉])\s*E[0-9]*[_]*/, function(match, name, e, E){
 	  return `Set_is${'∉'==e?'Not':''}In(${E}, term.a0)`;
 	  });
+        rule.hyp[idx]=rule.hyp[idx].replace(/\s*head\s*\((.+)\)\s*=\s*_(SUSP|STOP)\((.+)\)/, function(match, list, s, p){
+	  return `const ${p}=List_isHead${s}(${list});`;
+	  });
 	}
       const term=termTL(rule.conc[0]);
       const zeTerm=operators[term.nm];
@@ -119,7 +122,7 @@ function Result(term, E){
   }
 function _SUSP(t){
   if(!(this instanceof _SUSP)){
-    return new SUSP(t);
+    return new _SUSP(t);
     }
   this.nm='_SUSP';
   this.t=t;
@@ -217,6 +220,19 @@ function cons(head, tail){
     }
   return res;
   }
+function List_isHeadSUSP(l){
+  //console.log('** is SUSP', l[0]);
+  if(l[0] instanceof _SUSP){
+    return l[0].t;
+    }
+  return false;
+  }
+function List_isHeadSTOP(l){
+  if(l[0] instanceof _STOP){
+    return l[0].t;
+    }
+  return false;
+  }
 `);
 for(var op of Object.keys(operators)){
   console.log(`function ${op}(...args){
@@ -260,6 +276,11 @@ ${conc}
           console.log(`      const ${act_nm}=${rwr[0]};
       if(match(${act_nm}, '${rwr[1]}')){/*console.log("subrule:", ${act_nm});*/`);
           console.log(`        const {${syn_extract(rwr[1])}}=${act_nm};`);
+          }
+        else if(h.startsWith('const') && /(=)/.test(h)){
+	  const p=h.substring(6, h.indexOf("="));
+          console.log(`      ${h};/*console.log('h=', '${h}');*/
+      if(${p}){`);
           }
         else if(/(=)/.test(h)){
           const rwr=h.split(/\s*=\s*/g);
@@ -314,6 +335,11 @@ ${conc}
       if(match(${act_nm}, '${rwr[1]}')){`);
           console.log(`        const {${syn_extract(rwr[1])}}=${act_nm};`);
           }
+        else if(h.startsWith('const') && /(=)/.test(h)){
+	  const p=h.substring(6, h.indexOf("="));
+          console.log(`      ${h}
+      if(${p}){`);
+          }
         else if(/(=)/.test(h)){
           const rwr=h.split(/\s*=\s*/g);
           console.log(`      if(Set_eq(${rwr[0]}, ${rwr[1]})){`);
@@ -351,6 +377,22 @@ console.log('');
 term=react(term);
 console.log('');
 term=react(Seq([Generate("e"), Stop(), Stop()]));
+console.log('');
+term=react(term);
+console.log('');
+term=react(term);
+console.log('');
+term=react(Seq([Generate("e"), Stop(), Stop(), Generate('e'), Generate('f'), Stop()]));
+console.log('');
+term=react(term);
+console.log('');
+term=react(term);
+console.log('');
+term=react(term);
+console.log('');
+term=react(Par([_SUSP(Seq([Generate("e"), Stop(), Stop(), Generate('e'), Generate('f'), Stop()]))]));
+console.log('');
+term=react(term);
 console.log('');
 term=react(term);
 console.log('');

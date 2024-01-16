@@ -206,7 +206,7 @@ activ(Seq(l), E) -> STOP(Seq(cons(t_, tail(l))), E_)
 On doit pouvoir déconditionnaliser tout de suite car forcément l DOIT être différent de nil...
 C'est défensif...
 
-       l≠nil ; eoi(head(l), E) -> STOP(l_, E)
+       isNotEmpty(l) ; eoi(head(l), E) -> STOP(l_, E)
 ----------------------------------------------------
   eoi(Seq(l), E) -> STOP(Seq(cons(l_, tail(l))), E)
 */
@@ -260,63 +260,63 @@ class Merge extends Instruction {
 }
 /*
 
-                 l=nill
+                 isEmpty(l)
 ----------------------------------------
  activ(Par(l), E) -> TERM(Nothing(), E)
 
- l≠nill ; head(l)=_SUSP(p) ; activ(p,E) -> SUSP(p_,E_) ; activ(Par(tail(l)), E_) -> TERM(Nothing(), E__)
+ isNotEmpty(l) ; head(l)=_SUSP(p) ; activ(p,E) -> SUSP(p_,E_) ; activ(Par(tail(l)), E_) -> TERM(Nothing(), E__)
 --------------------------------------------------------------------------------------------------------
            activ(Par(l), E) -> SUSP(Par([_SUSP(p_)]), E__)
 
- l≠nill ; head(l)=_SUSP(p) ; activ(p,E) -> STOP(p_,E_) ; activ(Par(tail(l)), E_) -> TERM(Nothing(), E__)
+ isNotEmpty(l) ; head(l)=_SUSP(p) ; activ(p,E) -> STOP(p_,E_) ; activ(Par(tail(l)), E_) -> TERM(Nothing(), E__)
 --------------------------------------------------------------------------------------------------------
            activ(Par(l), E) -> STOP(Par([_SUSP(p_)]), E__)
 
- l≠nill ; head(l)=_SUSP(p) ; activ(p,E) -> TERM(Nothing(),E_) ; activ(Par(tail(l)), E_) -> TERM(Nothing(), E__)
+ isNotEmpty(l) ; head(l)=_SUSP(p) ; activ(p,E) -> TERM(Nothing(),E_) ; activ(Par(tail(l)), E_) -> TERM(Nothing(), E__)
 -------------------------------------------------------------------------------------------------------------
            activ(Par(l), E) -> TERM(Nothing(), E__)
 
- l≠nill ; head(l)=_SUSP(p) ; activ(p,E) -> TERM(Nothing(),E_) ; activ(Par(tail(l)), E_) -> STOP(Par(l_), E__)
+ isNotEmpty(l) ; head(l)=_SUSP(p) ; activ(p,E) -> TERM(Nothing(),E_) ; activ(Par(tail(l)), E_) -> STOP(Par(l_), E__)
 ---------------------------------------------------------------------------------------------------------------
            activ(Par(l), E) -> STOP(Par(l_), E__)
 
- l≠nill ; head(l)=_SUSP(p) ; activ(p,E) -> STOP(p_,E_) ; activ(Par(tail(l)), E_) -> STOP(Par(l_), E__)
+ isNotEmpty(l) ; head(l)=_SUSP(p) ; activ(p,E) -> STOP(p_,E_) ; activ(Par(tail(l)), E_) -> STOP(Par(l_), E__)
 ----------------------------------------------------------------------------------------------------------
            activ(Par(l), E) -> STOP(Par(cons(_STOP(p_), l_)), E__)
 
- l≠nill ; head(l)=_SUSP(p) ; activ(p,E) -> SUSP(p_,E_) ; activ(Par(tail(l)), E_) -> STOP(Par(l_), E__)
+ isNotEmpty(l) ; head(l)=_SUSP(p) ; activ(p,E) -> SUSP(p_,E_) ; activ(Par(tail(l)), E_) -> STOP(Par(l_), E__)
 ----------------------------------------------------------------------------------------------------------
            activ(Par(l), E) -> SUSP(Par(cons(_SUSP(p_), l_)), E__)
 
- l≠nill ; head(l)=_SUSP(p) ; activ(p,E) -> SUSP(p_,E_) ; activ(Par(tail(l)), E_) -> SUSP(Par(l_), E__)
+ isNotEmpty(l) ; head(l)=_SUSP(p) ; activ(p,E) -> SUSP(p_,E_) ; activ(Par(tail(l)), E_) -> SUSP(Par(l_), E__)
 ----------------------------------------------------------------------------------------------------------
            activ(Par(l), E) -> SUSP(Par(cons(_SUSP(p_), l_)), E__)
 
- l≠nill ; head(l)=_SUSP(p) ; activ(p,E) -> STOP(p_,E_) ; activ(Par(tail(l)), E_) -> SUSP(Par(l_), E__)
+ isNotEmpty(l) ; head(l)=_SUSP(p) ; activ(p,E) -> STOP(p_,E_) ; activ(Par(tail(l)), E_) -> SUSP(Par(l_), E__)
 ----------------------------------------------------------------------------------------------------------
            activ(Par(l), E) -> SUSP(Par(cons(_STOP(p_), l_)), E__)
 
- l≠nill ; head(l)=_SUSP(p) ; activ(p,E) -> TERM(Nothing(),E_) ; activ(Par(tail(l)), E_) -> SUSP(Par(l_), E__)
+ isNotEmpty(l) ; head(l)=_SUSP(p) ; activ(p,E) -> TERM(Nothing(),E_) ; activ(Par(tail(l)), E_) -> SUSP(Par(l_), E__)
 ---------------------------------------------------------------------------------------------------------------
            activ(Par(l), E) -> SUSP(Par(l_), E__)
 
- l≠nill ; head(l)=_STOP(p) ; activ(Par(tail(l)), E) -> SUSP(Par(l_), E_)
+ isNotEmpty(l) ; head(l)=_STOP(p) ; activ(Par(tail(l)), E) -> SUSP(Par(l_), E_)
 ----------------------------------------------------------------------------
            activ(Par(l), E) -> SUSP(Par(cons(_STOP(p),l_)), E_)
 
- l≠nill ; head(l)=_STOP(p) ; activ(Par(tail(l)), E) -> STOP(Par(l_), E_)
+ isNotEmpty(l) ; head(l)=_STOP(p) ; activ(Par(tail(l)), E) -> STOP(Par(l_), E_)
 ----------------------------------------------------------------------------
            activ(Par(l), E) -> STOP(Par(cons(_SUSP(p),l_)), E_)
 
- l≠nill ; head(l)=_STOP(p) ; activ(Par(tail(l)), E) -> TERM(Par(l_), E_)
+ isNotEmpty(l) ; head(l)=_STOP(p) ; activ(Par(tail(l)), E) -> TERM(Par(l_), E_)
 ----------------------------------------------------------------------------
            activ(Par(l), E) -> STOP(Par(cons(_SUSP(p), nil)), E_)
 
- l≠nill ; head(l)=_SUSP(p) ; eoi(p, E) -> STOP(p_, E) ; eoi(Par(tail(l)), E) -> STOP(Par(l_), E)
+ isNotEmpty(l) ; head(l)=_SUSP(p) ; eoi(p, E) -> STOP(p_, E) ; eoi(Par(tail(l)), E) -> STOP(Par(l_), E)
 ------------------------------------------------------------------------------------------------
            eoi(Par(l), E) -> STOP(Par(cons(_SUSP(p_), l_)), E)
 
- l≠nill ; head(l)=_STOP(p) ; eoi(Par(tail(l)), E) -> STOP(Par(l_), E)
+ isNotEmpty(l) ; head(l)=_STOP(p) ; eoi(Par(tail(l)), E) -> STOP(Par(l_), E)
 ---------------------------------------------------------------------
        eoi(Par(l), E) -> STOP(Par(cons(_SUSP(p), l_)), E)
 
