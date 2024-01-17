@@ -425,6 +425,35 @@ console.log('');
 term=react(term);
 console.log('');
 term=react(term);
+console.log('');
+term=react(term);
+console.log(\`*** Test Par(Seq(Generate("e"), Stop(), Stop(), Generate("e"), Generate("f"), Stop())
+, Seq(Stop(), Await("e"), Generate("h"), Stop(), Generate("i"), Stop(), Generate("j"), Stop()))\`);
+term=react(ClosePar(Par([_SUSP(Seq([Generate("e"), Stop(), Stop(), Generate('e'), Generate('f'), Stop()]))
+   , _SUSP(Seq([Stop(), Await("e"), Generate("h"), Stop(), Generate("i"), Stop(), Generate("j"), Stop()]))
+     ])));
+console.log('');
+term=react(term);
+console.log('');
+term=react(term);
+console.log('');
+term=react(term);
+console.log('');
+term=react(term);
+console.log('');
+term=react(term);
+console.log('*** Test Loop(Generate("e"))');
+term=react(Loop(Generate("e")));
+term=react(term);
+term=react(term);
+term=react(term);
+console.log('');
+console.log('*** Test Loop(Seq(Generate("e"), Stop(), Generate("f")))');
+term=react(Loop(Seq([Generate("e"), Stop(), Generate("f")])));
+term=react(term);
+term=react(term);
+term=react(term);
+console.log('');
   `);
   });
 
