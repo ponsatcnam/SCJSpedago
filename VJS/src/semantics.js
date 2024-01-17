@@ -112,7 +112,7 @@ activ(t, E) -> SUSP(t_, E_) ; E≠E_ ; activ(Close(t_), E_) -> STOP(t__, E__)
 
 activ(t, E) -> SUSP(t_, E_) ; E≠E_ ; activ(Close(t_), E_) -> TERM(t__, E__)
 ---------------------------------------------------------------------------
-        activ(Close(t), E) -> STOP(t__, E__)
+        activ(Close(t), E) -> TERM(Nothing(), E__)
 
     activ(t, E) -> STOP(t_, E_)
 ------------------------------------
@@ -262,18 +262,18 @@ class Merge extends Instruction {
 
                  isEmpty(l)
 ----------------------------------------
- activ(Par(l), E) -> TERM(Par(nil), E)
+ activ(Par(l), E) -> TERM(Nothing(), E)
 
  isNotEmpty(l) ; head(l)=_SUSP(p) ; activ(p,E) -> SUSP(p_,E_) ; activ(Par(tail(l)), E_) -> TERM(Nothing(), E__)
---------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------
            activ(Par(l), E) -> SUSP(Par([_SUSP(p_)]), E__)
 
  isNotEmpty(l) ; head(l)=_SUSP(p) ; activ(p,E) -> STOP(p_,E_) ; activ(Par(tail(l)), E_) -> TERM(Nothing(), E__)
---------------------------------------------------------------------------------------------------------
-           activ(Par(l), E) -> STOP(Par([_SUSP(p_)]), E__)
+----------------------------------------------------------------------------------------------------------------
+           activ(Par(l), E) -> STOP(Par([_STOP(p_)]), E__)
 
  isNotEmpty(l) ; head(l)=_SUSP(p) ; activ(p,E) -> TERM(Nothing(),E_) ; activ(Par(tail(l)), E_) -> TERM(Nothing(), E__)
--------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------
            activ(Par(l), E) -> TERM(Nothing(), E__)
 
  isNotEmpty(l) ; head(l)=_SUSP(p) ; activ(p,E) -> TERM(Nothing(),E_) ; activ(Par(tail(l)), E_) -> STOP(Par(l_), E__)
@@ -306,11 +306,11 @@ class Merge extends Instruction {
 
  isNotEmpty(l) ; head(l)=_STOP(p) ; activ(Par(tail(l)), E) -> STOP(Par(l_), E_)
 ----------------------------------------------------------------------------
-           activ(Par(l), E) -> STOP(Par(cons(_SUSP(p),l_)), E_)
+           activ(Par(l), E) -> STOP(Par(cons(_STOP(p),l_)), E_)
 
  isNotEmpty(l) ; head(l)=_STOP(p) ; activ(Par(tail(l)), E) -> TERM(Par(l_), E_)
 ----------------------------------------------------------------------------
-           activ(Par(l), E) -> STOP(Par(cons(_SUSP(p), nil)), E_)
+           activ(Par(l), E) -> STOP(Par(cons(_STOP(p), nil)), E_)
 
  isNotEmpty(l) ; head(l)=_SUSP(p) ; eoi(p, E) -> STOP(p_, E) ; eoi(Par(tail(l)), E) -> STOP(Par(l_), E)
 ------------------------------------------------------------------------------------------------
@@ -323,6 +323,23 @@ class Merge extends Instruction {
           isEmpty(l)
 -------------------------------------
  eoi(Par(l), E) -> STOP(Par(nil), E)
+
+         activ(t, E) -> SUSP(t_, E_)
+--------------------------------------------------
+ activ(ClosePar(t), E) ->  SUSP(ClosePar(t_), E_)
+
+        activ(t, E) -> TERM(t_, E_)
+----------------------------------------------
+ activ(ClosePar(t), E) ->  TERM(Nothing(), E_)
+
+ activ(t, E) -> STOP(t_, E_) ; eoi(t_, E_) -> STOP(t__, E__)
+-------------------------------------------------------------
+     activ(ClosePar(t), E) ->  STOP(ClosePar(t__), E__)
+
+          eoi(t, E) -> STOP(t_, E)
+-----------------------------------------------
+ eoi(ClosePar(t), E) ->  STOP(ClosePar(t_), E)
+
 */
 
 class Atom extends Instruction {
@@ -506,6 +523,13 @@ class PrintAtom extends Generate {
   }
 }
 
+/*
+
+                true 
+------------------------------------------
+ activ(PrintAtom(nom), E) -> TERM(Nothing(), E U {'stdout'})
+
+*/
 
 module.exports = {
   Machine: Machine,

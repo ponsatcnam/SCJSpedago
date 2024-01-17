@@ -9,12 +9,14 @@ const SynAbs=[
   "Close"
 , "Seq"
 , "Par"
+, "ClosePar"
 , "Nothing"
 , "Stop"
 , "Loop"
 , "Generate"
 , "Await"
 , "Atom"
+, "PrintAtom"
   ];
 
 function termTL(str){
@@ -84,8 +86,8 @@ fs.readFile('semantics.js', 'utf8', function(err, data){
       const conc=lignes[i+1].trim();
       const rule={ hyp: hyp.split(/\s*;\s*/g), conc: conc.split(/\s*->\s*/g) };
       for(var idx in rule.hyp){
-        rule.hyp[idx]=rule.hyp[idx].replace(/(\w+)\s*([∈∉])\s*E[0-9]*[_]*/, function(match, name, e, E){
-	  return `Set_is${'∉'==e?'Not':''}In(${E}, term.a0)`;
+        rule.hyp[idx]=rule.hyp[idx].replace(/(\w+)\s*([∈∉])\s*E[0-9]*[_]*/, function(match, name, e){
+	  return `Set_is${'∉'==e?'Not':''}In(E, ${name})`;
 	  });
         rule.hyp[idx]=rule.hyp[idx].replace(/\s*head\s*\((.+)\)\s*=\s*_(SUSP|STOP)\((.+)\)/, function(match, list, s, p){
 	  return `const ${p}=List_isHead${s}(${list});`;
@@ -185,6 +187,7 @@ function Set_neq(E, E_){
   return false;
   }
 function Set_isIn(E, elt){
+  //console.log(\`\${elt} is in \${E}\ : \${Object.keys(E).includes(elt)}\`);
   return Object.keys(E).includes(elt);
   }
 function Set_isNotIn(E, elt){
@@ -311,13 +314,14 @@ ${conc}
 
 console.log(`
 function eoi(term, E){
+  //console.log(">>eoi", term,E);
   switch(term.nm){`);
   for(var nm of Object.keys(operators)){
     const op=operators[nm];
     const rules=op.eoi;
     console.log(`    case '${nm}':{`);
     if(op.syntax!=""){
-      console.log(`      const {${op.syntax}}=term;`);
+      console.log(`      const {a0: ${op.syntax}}=term;`);
       }
     var nb=0;
     for(var r of rules){
@@ -371,6 +375,10 @@ console.log('*** Test Nothing()');
 var term=react(Nothing());
 term=react(term);
 console.log('');
+console.log('*** Test PrintAtom("Hello")');
+var term=react(PrintAtom("Hello"));
+term=react(term);
+console.log('');
 console.log('*** Test Stop()');
 term=react(Stop());
 term=react(term);
@@ -381,6 +389,10 @@ term=react(term);
 console.log('');
 console.log('*** Test Seq(Generate("e"), Stop())');
 term=react(Seq([Generate("e"), Stop()]));
+term=react(term);
+console.log('');
+console.log('*** Test Seq(Generate("e"), Await("e"))');
+term=react(Seq([Generate("e"), Await("e")]));
 term=react(term);
 console.log('');
 console.log('*** Test Seq(Generate("e"), Stop(), Stop())');
@@ -404,9 +416,13 @@ console.log('');
 
 console.log(\`*** Test Par(Seq(Generate("e"), Stop(), Stop(), Generate("e"), Generate("f"), Stop())
 , Seq(Stop(), Await("e"), Generate("h"), Stop(), Generate("i")))\`);
-term=react(Par([_SUSP(Seq([Generate("e"), Stop(), Stop(), Generate('e'), Generate('f'), Stop()]))
+term=react(ClosePar(Par([_SUSP(Seq([Generate("e"), Stop(), Stop(), Generate('e'), Generate('f'), Stop()]))
    , _SUSP(Seq([Stop(), Await("e"), Generate("h"), Stop(), Generate("i")]))
-     ]));
+     ])));
+console.log('');
+term=react(term);
+console.log('');
+term=react(term);
 console.log('');
 term=react(term);
   `);
