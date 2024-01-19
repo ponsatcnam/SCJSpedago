@@ -161,12 +161,13 @@ function TERM(t, E){
   this.E=E;
   }
 function react(p){
-  return instant(p, {});
+  let {t, E, end }=instant(p, {});
+  console.error(' ==> ', end?'fini':'pas fini', ':', t, 'in', E);
+  return t;
   }
 function instant(p, E){
   let { nm, t: res, E: out }=activ(new Close(p), E);
-  console.error(' ==> ', nm, ':', res, 'in', out);
-  return res;
+  return {t: res, E: out, end: nm=="TERM"};
   }
 function Set_eq(E, E_){
   let keyE_=Object.keys(E_);
@@ -371,89 +372,49 @@ ${conc}
     }
   }`);
   console.log(`
-console.log('*** Test Nothing()');
-var term=react(Nothing());
-term=react(term);
-console.log('');
-console.log('*** Test PrintAtom("Hello")');
-var term=react(PrintAtom("Hello"));
-term=react(term);
-console.log('');
-console.log('*** Test Stop()');
-term=react(Stop());
-term=react(term);
-console.log('');
-console.log('*** Test Generate("e")');
-term=react(Generate("e"));
-term=react(term);
-console.log('');
-console.log('*** Test Seq(Generate("e"), Stop())');
-term=react(Seq([Generate("e"), Stop()]));
-term=react(term);
-console.log('');
-console.log('*** Test Seq(Generate("e"), Await("e"))');
-term=react(Seq([Generate("e"), Await("e")]));
-term=react(term);
-console.log('');
-console.log('*** Test Seq(Generate("e"), Stop(), Stop())');
-term=react(Seq([Generate("e"), Stop(), Stop()]));
-term=react(term);
-term=react(term);
-console.log('');
-console.log('*** Test Seq(Generate("e"), Stop(), Stop(), Generate("e"), Generate("f"), Stop())');
-term=react(Seq([Generate("e"), Stop(), Stop(), Generate('e'), Generate('f'), Stop()]));
-term=react(term);
-term=react(term);
-term=react(term);
-console.log('');
-console.log('*** Test Par(Seq(Generate("e"), Stop(), Stop(), Generate("e"), Generate("f"), Stop()))');
-term=react(Par([_SUSP(Seq([Generate("e"), Stop(), Stop(), Generate('e'), Generate('f'), Stop()]))]));
-term=react(term);
-term=react(term);
-term=react(term);
-term=react(term);
-console.log('');
-
-console.log(\`*** Test Par(Seq(Generate("e"), Stop(), Stop(), Generate("e"), Generate("f"), Stop())
-, Seq(Stop(), Await("e"), Generate("h"), Stop(), Generate("i")))\`);
-term=react(ClosePar(Par([_SUSP(Seq([Generate("e"), Stop(), Stop(), Generate('e'), Generate('f'), Stop()]))
-   , _SUSP(Seq([Stop(), Await("e"), Generate("h"), Stop(), Generate("i")]))
-     ])));
-console.log('');
-term=react(term);
-console.log('');
-term=react(term);
-console.log('');
-term=react(term);
-console.log('');
-term=react(term);
-console.log(\`*** Test Par(Seq(Generate("e"), Stop(), Stop(), Generate("e"), Generate("f"), Stop())
-, Seq(Stop(), Await("e"), Generate("h"), Stop(), Generate("i"), Stop(), Generate("j"), Stop()))\`);
-term=react(ClosePar(Par([_SUSP(Seq([Generate("e"), Stop(), Stop(), Generate('e'), Generate('f'), Stop()]))
-   , _SUSP(Seq([Stop(), Await("e"), Generate("h"), Stop(), Generate("i"), Stop(), Generate("j"), Stop()]))
-     ])));
-console.log('');
-term=react(term);
-console.log('');
-term=react(term);
-console.log('');
-term=react(term);
-console.log('');
-term=react(term);
-console.log('');
-term=react(term);
-console.log('*** Test Loop(Generate("e"))');
-term=react(Loop(Generate("e")));
-term=react(term);
-term=react(term);
-term=react(term);
-console.log('');
-console.log('*** Test Loop(Seq(Generate("e"), Stop(), Generate("f")))');
-term=react(Loop(Seq([Generate("e"), Stop(), Generate("f")])));
-term=react(term);
-term=react(term);
-term=react(term);
-console.log('');
-  `);
+const SC={
+  Seq: function(...args){
+    let list=[];
+    for(var elt of args){
+      list.push(elt);
+      }
+    return new Seq(list)
+    },
+  Par: function(...args){
+    let list=[];
+    for(var elt of args){
+      list.push(_SUSP(elt));
+      }
+    return ClosePar(Par(list))
+    },
+  Nothing: function(){
+    return new Nothing();
+    },
+  Stop: function(){
+    return new Stop();
+    },
+  Generate : function(nom){
+    return new Generate(nom);
+    },
+  PrintAtom: function(msg){
+    return new PrintAtom(msg);
+    },
+  Await: function(nom){
+    return new Await(nom);
+    },
+  Loop: function(...args){
+    let list=[];
+    for(var elt of args){
+      list.push(elt);
+      }
+    console.log("building loop with", list);
+    return new Loop(list.length>1?new Seq(list):list[0]);
+    },
+  react: react
+  };
+module.exports = {
+  SC: SC
+}
+`);
   });
 
