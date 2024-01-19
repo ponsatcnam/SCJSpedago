@@ -106,22 +106,13 @@ fs.readFile('semantics.js', 'utf8', function(err, data){
         }
       }
     }
-  console.log(`
-/* return a term */
-function getInstName(str){
-  const m=str.match(/\w+/);
-  return m[0];
-  };
-function isNotEmpty(l){
+  console.log(
+`function isNotEmpty(l){
   return (l?l:[]).length>0;
   };
 function isEmpty(l){
   return (l?l:[]).length===0;
   };
-function Result(term, E){
-  this.term=term;
-  this.E=E;
-  }
 function _SUSP(t){
   if(!(this instanceof _SUSP)){
     return new _SUSP(t);
@@ -204,10 +195,10 @@ function Set_add(E, set){
     }
   return res;
   }
+const nil=[];
 function head(l){
   return l[0];
   }
-const nil=[];
 function tail(l){
   let res=[];
   for(var i in l){
@@ -242,7 +233,6 @@ function List_isHeadSTOP(l){
 for(var op of Object.keys(operators)){
   console.log(`function ${op}(...args){
     if(!(this instanceof ${op})){
-      //console.log("need a new");
       return new ${op}(...args);
       }
     this.nm='${op}';
@@ -372,6 +362,30 @@ ${conc}
     }
   }`);
   console.log(`
+/*
+On distingue 2 syntaxes :
+
+ - la syntaxe concrète qui permet d'écrire des programmes dont les instructions
+   sont instanciées par appels de méthodes idoines sur la classe SC.
+ - la syntaxe abstrite des règles qui ajoute de façon structurelle
+   éventuellement des structures supplémentaires pour staisfaires à la forme
+   particulière des règles et produire un terme confomre aux règles de
+   réécritures. Certains nœuds existe dans la syntaxe abstraites mais pas dans
+   la syntaxe concrète. Ils ont rajoutés au cour de la transcription du
+   programme exprimé dans sa syntaxe concète en un terme exprimé dans la
+   syntaxe abstraite.
+Exemple :
+le programme :
+
+SC.Par(SC.Stop(), SC.Stop())
+
+est transformé en un terme
+
+Par([_SUSP(Stop()), _SUSP(Stop())])
+
+avant que l'on puisse y appliquer les règles de réécritures.
+*/
+
 const SC={
   Seq: function(...args){
     let list=[];
