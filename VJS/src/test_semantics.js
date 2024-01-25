@@ -50,7 +50,7 @@ console.log('');
 
 console.log('*** Test Seq(Generate("e"), Stop(), Stop())');
 term=SC.react(SC.Seq(SC.Generate("e"), SC.Stop(), SC.Stop()));
-for(var n=0; n<1; n++){
+for(var n=0; n<2; n++){
   term=SC.react(term);
   }
 console.log('');

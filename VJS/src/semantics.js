@@ -178,35 +178,35 @@ class Seq extends Instruction {
 }
 /*
 
-      isNotEmpty(l) ; activ(head(l),E)->SUSP(t_,E_)
-----------------------------------------------------
-activ(Seq(l), E) -> SUSP(Seq(cons(t_, tail(l))), E_)
+      l≠nil ; activ(head(l),E)->SUSP(t_,E_)
+------------------------------------------------------
+ activ(Seq(l), E) -> SUSP(Seq(cons(t_, tail(l))), E_)
 
-      isNotEmpty(l) ; activ(head(l),E)->STOP(t_,E_)
-----------------------------------------------------
-activ(Seq(l), E) -> STOP(Seq(cons(t_, tail(l))), E_)
+      l≠nil ; activ(head(l),E)->STOP(t_,E_)
+------------------------------------------------------
+ activ(Seq(l), E) -> STOP(Seq(cons(t_, tail(l))), E_)
 
- isNotEmpty(l) ; activ(head(l),E)->TERM(Nothing(), E_) ; activ(Seq(tail(l)), E_) -> SUSP(u, E__)
----------------------------------------------------------------------------------------
+ l≠nil ; activ(head(l),E)->TERM(Nothing(), E_) ; activ(Seq(tail(l)), E_) -> SUSP(u, E__)
+-----------------------------------------------------------------------------------------
                       activ(Seq(l), E) -> SUSP(u, E__)
 
- isNotEmpty(l) ; activ(head(l),E)->TERM(Nothing(), E_) ; activ(Seq(tail(l)), E_) -> STOP(u, E__)
----------------------------------------------------------------------------------------
+ l≠nil ; activ(head(l),E)->TERM(Nothing(), E_) ; activ(Seq(tail(l)), E_) -> STOP(u, E__)
+-----------------------------------------------------------------------------------------
                       activ(Seq(l), E) -> STOP(u, E__)
 
- isNotEmpty(l) ; activ(head(l),E)->TERM(Nothing(), E_) ; activ(Seq(tail(l)), E_) -> TERM(u, E__)
----------------------------------------------------------------------------------------
+ l≠nil ; activ(head(l),E)->TERM(Nothing(), E_) ; activ(Seq(tail(l)), E_) -> TERM(u, E__)
+-----------------------------------------------------------------------------------------
                       activ(Seq(l), E) -> TERM(Nothing(), E__)
 
-                  isEmpty(l)
+                  l=nil
 ----------------------------------------
-  activ(Seq(l), E) -> TERM(Nothing(), E)
+ activ(Seq(l), E) -> TERM(Nothing(), E)
 
 
 On doit pouvoir déconditionnaliser tout de suite car forcément l DOIT être différent de nil...
 C'est défensif...
 
-       isNotEmpty(l) ; eoi(head(l), E) -> STOP(l_, E)
+       l≠nil ; eoi(head(l), E) -> STOP(l_, E)
 ----------------------------------------------------
   eoi(Seq(l), E) -> STOP(Seq(cons(l_, tail(l))), E)
 */
@@ -260,67 +260,67 @@ class Merge extends Instruction {
 }
 /*
 
-                 isEmpty(l)
+                 l=nil
 ----------------------------------------
  activ(Par(l), E) -> TERM(Nothing(), E)
 
- isNotEmpty(l) ; head(l)=_SUSP(p) ; activ(p,E) -> SUSP(p_,E_) ; activ(Par(tail(l)), E_) -> TERM(Nothing(), E__)
+ l≠nil ; head(l)=_SUSP(p) ; activ(p,E) -> SUSP(p_,E_) ; activ(Par(tail(l)), E_) -> TERM(Nothing(), E__)
 ----------------------------------------------------------------------------------------------------------------
            activ(Par(l), E) -> SUSP(Par([_SUSP(p_)]), E__)
 
- isNotEmpty(l) ; head(l)=_SUSP(p) ; activ(p,E) -> STOP(p_,E_) ; activ(Par(tail(l)), E_) -> TERM(Nothing(), E__)
+ l≠nil ; head(l)=_SUSP(p) ; activ(p,E) -> STOP(p_,E_) ; activ(Par(tail(l)), E_) -> TERM(Nothing(), E__)
 ----------------------------------------------------------------------------------------------------------------
            activ(Par(l), E) -> STOP(Par([_STOP(p_)]), E__)
 
- isNotEmpty(l) ; head(l)=_SUSP(p) ; activ(p,E) -> TERM(Nothing(),E_) ; activ(Par(tail(l)), E_) -> TERM(Nothing(), E__)
+ l≠nil ; head(l)=_SUSP(p) ; activ(p,E) -> TERM(Nothing(),E_) ; activ(Par(tail(l)), E_) -> TERM(Nothing(), E__)
 -----------------------------------------------------------------------------------------------------------------------
            activ(Par(l), E) -> TERM(Nothing(), E__)
 
- isNotEmpty(l) ; head(l)=_SUSP(p) ; activ(p,E) -> TERM(Nothing(),E_) ; activ(Par(tail(l)), E_) -> STOP(Par(l_), E__)
+ l≠nil ; head(l)=_SUSP(p) ; activ(p,E) -> TERM(Nothing(),E_) ; activ(Par(tail(l)), E_) -> STOP(Par(l_), E__)
 ---------------------------------------------------------------------------------------------------------------
            activ(Par(l), E) -> STOP(Par(l_), E__)
 
- isNotEmpty(l) ; head(l)=_SUSP(p) ; activ(p,E) -> STOP(p_,E_) ; activ(Par(tail(l)), E_) -> STOP(Par(l_), E__)
+ l≠nil ; head(l)=_SUSP(p) ; activ(p,E) -> STOP(p_,E_) ; activ(Par(tail(l)), E_) -> STOP(Par(l_), E__)
 ----------------------------------------------------------------------------------------------------------
            activ(Par(l), E) -> STOP(Par(cons(_STOP(p_), l_)), E__)
 
- isNotEmpty(l) ; head(l)=_SUSP(p) ; activ(p,E) -> SUSP(p_,E_) ; activ(Par(tail(l)), E_) -> STOP(Par(l_), E__)
+ l≠nil ; head(l)=_SUSP(p) ; activ(p,E) -> SUSP(p_,E_) ; activ(Par(tail(l)), E_) -> STOP(Par(l_), E__)
 ----------------------------------------------------------------------------------------------------------
            activ(Par(l), E) -> SUSP(Par(cons(_SUSP(p_), l_)), E__)
 
- isNotEmpty(l) ; head(l)=_SUSP(p) ; activ(p,E) -> SUSP(p_,E_) ; activ(Par(tail(l)), E_) -> SUSP(Par(l_), E__)
+ l≠nil ; head(l)=_SUSP(p) ; activ(p,E) -> SUSP(p_,E_) ; activ(Par(tail(l)), E_) -> SUSP(Par(l_), E__)
 ----------------------------------------------------------------------------------------------------------
            activ(Par(l), E) -> SUSP(Par(cons(_SUSP(p_), l_)), E__)
 
- isNotEmpty(l) ; head(l)=_SUSP(p) ; activ(p,E) -> STOP(p_,E_) ; activ(Par(tail(l)), E_) -> SUSP(Par(l_), E__)
+ l≠nil ; head(l)=_SUSP(p) ; activ(p,E) -> STOP(p_,E_) ; activ(Par(tail(l)), E_) -> SUSP(Par(l_), E__)
 ----------------------------------------------------------------------------------------------------------
            activ(Par(l), E) -> SUSP(Par(cons(_STOP(p_), l_)), E__)
 
- isNotEmpty(l) ; head(l)=_SUSP(p) ; activ(p,E) -> TERM(Nothing(),E_) ; activ(Par(tail(l)), E_) -> SUSP(Par(l_), E__)
+ l≠nil ; head(l)=_SUSP(p) ; activ(p,E) -> TERM(Nothing(),E_) ; activ(Par(tail(l)), E_) -> SUSP(Par(l_), E__)
 ---------------------------------------------------------------------------------------------------------------
            activ(Par(l), E) -> SUSP(Par(l_), E__)
 
- isNotEmpty(l) ; head(l)=_STOP(p) ; activ(Par(tail(l)), E) -> SUSP(Par(l_), E_)
+ l≠nil ; head(l)=_STOP(p) ; activ(Par(tail(l)), E) -> SUSP(Par(l_), E_)
 ----------------------------------------------------------------------------
            activ(Par(l), E) -> SUSP(Par(cons(_STOP(p),l_)), E_)
 
- isNotEmpty(l) ; head(l)=_STOP(p) ; activ(Par(tail(l)), E) -> STOP(Par(l_), E_)
+ l≠nil ; head(l)=_STOP(p) ; activ(Par(tail(l)), E) -> STOP(Par(l_), E_)
 ----------------------------------------------------------------------------
            activ(Par(l), E) -> STOP(Par(cons(_STOP(p),l_)), E_)
 
- isNotEmpty(l) ; head(l)=_STOP(p) ; activ(Par(tail(l)), E) -> TERM(Par(l_), E_)
+ l≠nil ; head(l)=_STOP(p) ; activ(Par(tail(l)), E) -> TERM(Par(l_), E_)
 ----------------------------------------------------------------------------
            activ(Par(l), E) -> STOP(Par(cons(_STOP(p), nil)), E_)
 
- isNotEmpty(l) ; head(l)=_SUSP(p) ; eoi(p, E) -> STOP(p_, E) ; eoi(Par(tail(l)), E) -> STOP(Par(l_), E)
+ l≠nil ; head(l)=_SUSP(p) ; eoi(p, E) -> STOP(p_, E) ; eoi(Par(tail(l)), E) -> STOP(Par(l_), E)
 ------------------------------------------------------------------------------------------------
            eoi(Par(l), E) -> STOP(Par(cons(_SUSP(p_), l_)), E)
 
- isNotEmpty(l) ; head(l)=_STOP(p) ; eoi(Par(tail(l)), E) -> STOP(Par(l_), E)
+ l≠nil ; head(l)=_STOP(p) ; eoi(Par(tail(l)), E) -> STOP(Par(l_), E)
 ---------------------------------------------------------------------
        eoi(Par(l), E) -> STOP(Par(cons(_SUSP(p), l_)), E)
 
-          isEmpty(l)
+              l=nil
 -------------------------------------
  eoi(Par(l), E) -> STOP(Par(nil), E)
 
@@ -483,7 +483,7 @@ class Generate extends Atom {
 /*
                        true
 ----------------------------------------------------
- activ(Generate(nom), E) -> TERM(Nothing(), E U {nom})
+ activ(Generate(nom), E) -> TERM(Nothing(), E ∪ {nom})
 */
 
 
@@ -527,7 +527,7 @@ class PrintAtom extends Generate {
 
                 true 
 ------------------------------------------
- activ(PrintAtom(nom), E) -> TERM(Nothing(), E U {'stdout'})
+ activ(PrintAtom(nom), E) -> TERM(Nothing(), E ∪ {'stdout'})
 
 */
 

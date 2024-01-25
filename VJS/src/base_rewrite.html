@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title lang="en">The Semantics of SugarCubes JS</title>
+  <script type="text/javascript" async="true" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+  <script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [["\$","\$"],["\\\\(","\\\\)"]]
+      }
+  }); 
+  </script>
+ </head>
+ <body>
+  <h1>Sémantique formelle de SugarCubes JS à base de règles de réécriture SOS «à la» Plotkin.</h1>
+ Ce document présente de façon «lisible» les règles SOS de la sémantique des constructions de SugarCubes JS.
+<p>
+Le format général des règles est le suivant :
+
+$$
+t, E \xrightarrow{~\alpha~} t', E'
+$$
+et s'interprète comme suit : « un terme $t$ dans un environnement $E$ se réécrite en un terme $t'$ dans un environnement $E'$ en retournant un status d'exécution $\alpha$»
+le status $\alpha$ aura une des trois valeurs suivantes :
+<ul>
+<li>$SUSP$ le terme réécrit doit être encore réduit pour finir l'exécution de l'instant courant.
+<li>$STOP$ le terme réécrit à terminé sa réaction pour l'instant courant et ne peut donc plus être réduit pour l'instant courant (l'exécution se pour suivra à l'instant suivant).
+<li>$TERM$ le terme réécrit à complètement terminé son éxécution et ne réécrira plus que dans le terme Nothing() sans plus jamais rien produire.
+</ul>
+</p>
+Ce format de règles correspond aux règles d'activation des instructions.
+<p>
+Il existe cependant un format de règles spécifiques à la réécriture des termes à la fin de l'instant courant :
+$$
+E\vdash t \longmapsto t'
+$$
+
+Qui s'interprète de la manière suivante :
+« Lorsque la fin de l'instant a été décidé par l'algorithme d'exécution, le terme $t$ se réécrit dans le terme $t'$ dans l'environnement désormais immuable $E$»
+</p>
+
