@@ -350,7 +350,7 @@ function instant(p, E){
       }
     for(var nm of Object.keys(operators)){
       const op=operators[nm];
-      console.log(`<h1>Operator ${nm}</h1>`);
+      console.log(`<h3>Operator ${nm}</h3>`);
       const rules=op.activ.concat(op.eoi);
       console.log('<ol>');
       for(var r of rules){
@@ -369,7 +369,12 @@ function instant(p, E){
             });
             predicats+=(0!=idx?'\\hspace{1cm}':'');
             predicats+=h.replace(/(activ|eoi)\((.*)\)\s*->\s*(TERM|STOP|SUSP)\((.*)\)/, function(match, activ, te, st, te_){
-                return te+(activ=='eoi'?'\\require{mathtools}\\longmapsto ':'\\require{mathtools}\\xrightarrow{~'+st+'~} ')+te_;
+              if(activ=='eoi'){
+                return te.substr(te.lastIndexOf(',')+1)+' \\vdash ~ '+te.substr(0, te.lastIndexOf(','))+'\\longmapsto '+te_.substr(0, te_.lastIndexOf(','));
+                }
+              else{
+                return te+'\\require{mathtools}\\xrightarrow{~'+st+'~} '+te_;
+                }
               }
               );
             }
@@ -379,7 +384,7 @@ function instant(p, E){
         var act=false;
         ruleText+=conc[0].replace(/(activ|eoi)\s*\((.*)\)/, function(match, rr, te){
         act=rr=="activ";
-        return te;
+        return (act?te:te.substr(te.lastIndexOf(',')+1)+' \\vdash ~ '+te.substr(0, te.lastIndexOf(',')));
         });
         ruleText+=(act?'\\require{mathtools}\\xrightarrow{':'\\longmapsto ')+'';
         ruleText+=conc[1].replace(/({|})/g, function(match, ac){
@@ -388,7 +393,7 @@ function instant(p, E){
             return '\\overset{'+(st=='STOP'?'●':'○')+'}{'+t+'}';
           }).replace(/(TERM|STOP|SUSP)\((.*)\)/,function(match, st, te_){
           te_=te_.replace('∪', '~\\cup~');          
-          return (act?('~'+st+'~}'):' ')+te_;
+          return (act?('~'+st+'~}'+te_):te_.substr(0, te_.lastIndexOf(',')));
         });
         if(1==hyps.length && hyps[0].trim()=='true'){
           }
