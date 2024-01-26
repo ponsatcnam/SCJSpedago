@@ -26,7 +26,7 @@ le status $\alpha$ aura une des trois valeurs suivantes :
 <ul>
 <li>$SUSP$ le terme réécrit doit être encore réduit pour finir l'exécution de l'instant courant.
 <li>$STOP$ le terme réécrit à terminé sa réaction pour l'instant courant et ne peut donc plus être réduit pour l'instant courant (l'exécution se pour suivra à l'instant suivant).
-<li>$TERM$ le terme réécrit à complètement terminé son éxécution et ne réécrira plus que dans le terme Nothing() sans plus jamais rien produire.
+<li>$TERM$ le terme réécrit à complètement terminé son exécution et ne réécrira plus que dans le terme $Nothing()$ sans plus jamais rien produire.
 </ul>
 </p>
 Ce format de règles correspond aux règles d'activation des instructions.
@@ -53,5 +53,64 @@ La syntaxe concrète regroupe les constructions permettant de construire des ter
 <li> $Stop()$ permet de construire un $Stop$, il se traduit en une construction totalement équivalente dans la syntaxe abstraite
 <li> $Generate(nom)$ permet de construire un $Generate$ d'un événement désigné par $nom$, il se traduit en une construction totalement équivalente dans la syntaxe abstraite
 <li> $Await(nom)$ permet de construire un $Await$ d'un événement désigné par $nom$, il se traduit en une construction totalement équivalente dans la syntaxe abstraite
-<li> $Loop(p)$ permet de construire une boucle infinie $Loop$ d'un programme p, il se traduit en une construction totalement équivalente dans la syntaxe abstraite
+<li> $Loop(p)$ permet de construire une boucle infinie $Loop$ d'un programme $p$, il se traduit en une construction totalement équivalente dans la syntaxe abstraite
 </ul>
+<h2>Syntaxe abstraite</h2>
+La syntaxe abstraite regroupe les constructions permettant les termes à exécuter :
+<ul>
+<li> $Par(l)$ permet de construire un $Par$ avec une liste de branches à exécuter. Chaque branche de la liste est encapsulée par un marqueur indiquant si la branche est activable ($\_SUSP(b)$), Pour «alléger» la notation des status on va remplacer dans le format des règle le status $\_STOP(t)$ par une annotation au dessus du terme $t$ : $\overset{●}{t}$ qui signifie : « le terme $t$ n'est pas activable » et le status $\_SUSP(t)$ par une annotation au dessus du terme $t$ : $\overset{○}{t}$ qui signifie « le tereme $t$ est activable »
+<li> $Seq(l)$ permet de construire une séquence avec une liste de terme (à exécuter en séquence)
+<li> $Nothing()$ permet de construire un $Nothing$ terme qui ne fait rien et termine immédiatement
+<li> $Stop()$ permet de construire un $Stop$
+<li> $Generate(nom)$ permet de construire un $Generate$ d'un événement désigné par $nom$
+<li> $Await(nom)$ permet de construire un $Await$ d'un événement désigné par $nom$
+<li> $Loop(p)$ permet de construire une boucle infinie $Loop$ d'un programme $p$
+<li> $ClosePar(t)$ est une construction Abstraite qui est rajoutée par le traducteur de la syntaxe concrète vers la syntaxe abstraite au moment de la traduction d'un $Par$ concret en un $Par$ abstrait. Cet opérateur permet de réinitialiser le status des branches d'un $Par$ pour l'instant suivant, quand toutes les branches de Par on retourné $STOP$ ou $TERM$.
+<li> $Close(t)$ est un opérateur ajouté par l'exécution d'un instant d'un terme et qui implémente le calcul du point fixe de l'exécution d'un instant du terme.
+</ul>
+
+Les structures $Close$ et $ClosePar$ n'interviennent que dans la construction des termes exécutables (la syntaxe abstraites). On ne peut pas écrire de programme avec dans la syntaxe concrète.
+
+<h2>Traduction de la syntaxe concrète dans la syntaxe abstraite</h2>
+
+Pour chaque structure de la syntaxe concrète on a une traduction en en un construction de la syntaxe abstraite. Certaines structures se traduisent directement :
+<ul>
+<li> $trad(Nothing()) = Nothing()$ 
+<li> $trad(Stop()) = Stop()$
+<li> $trad(Generate(nom)) = Generate(nom)$
+<li> $trad(Await(nom)) = Await(nom)$
+<li> $trad(Loop(p))= Loop(trad(p))$
+</ul>
+<p>
+La traduction d'une séquence n-aire de n termes se traduit en un opérateur $Seq$ d'une liste de termes :
+$$
+trad(Seq(t_1, t_2...))=Seq([trad(t_1), trad(t_2)...])
+$$
+</p>
+La traduction d'un Par n-aire de n branches se traduit en un opérateur $Par$ d'une liste de termes marqués par un status d'exécution qui pour chaque branche est initialement $\_SUSP$ :
+$$
+trad(Par(t_1, t_2...))=Par([\_SUSP(trad(t_1)), \_SUSP(trad(t_2))...])
+$$
+<h2>Les règles de réécritures des termes de la syntaxe concrète</h2>
+
+<h3>React: activation d'un instant d'un terme</h3>
+<ol>
+<li>
+$$
+\frac{t,⌀ \Rightarrow u}{t \Rrightarrow u}
+$$
+</ol>
+<h3>instant: activation d'un instant d'un terme en introduisant l'environnement d'exécution du terme (initialement vide)</h3>
+<ol>
+<li>
+$$
+\frac{ Close(t), E \xrightarrow{~TERM~} Nothing(), E'}
+{ t,E \Rightarrow Nothing()}
+$$
+<li>
+$$
+\frac{ Close(t), E \xrightarrow{~STOP~} t', E'}
+{ t,E \Rightarrow t'}
+
+$$
+</ol>
