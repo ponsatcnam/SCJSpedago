@@ -40,3 +40,18 @@ Qui s'interprète de la manière suivante :
 « Lorsque la fin de l'instant a été décidé par l'algorithme d'exécution, le terme $t$ se réécrit dans le terme $t'$ dans l'environnement désormais immuable $E$»
 </p>
 
+Lorsque une règle de réécriture est conditionnée par de prédicats, on écrit la règle dans le format suivant :
+$$
+\frac{\text{liste de prédicats}}{\text{règle de réécriture}}
+$$
+<h2>Syntaxe concrète</h2>
+La syntaxe concrète regroupe les constructions permettant de construire des termes à exécuter :
+<ul>
+<li> $Par(...)$ permet de construire un $Par$ à n-branches, il se traduit en une construction à un seul argument (une liste de termes abstrait encadré par un marqueur de status $\_SUSP(t)$ ou $\_STOP(t)$) dans la syntaxe abstraite
+<li> $Seq(...)$ permet de construire un $Seq$ à n-branches, il se traduit en une construction à un seul argument (une liste de termes abstrait) dans la syntaxe abstraite
+<li> $Nothing()$ permet de construire un $Nothing$, il se traduit en une construction totalement équivalente dans la syntaxe abstraite
+<li> $Stop()$ permet de construire un $Stop$, il se traduit en une construction totalement équivalente dans la syntaxe abstraite
+<li> $Generate(nom)$ permet de construire un $Generate$ d'un événement désigné par $nom$, il se traduit en une construction totalement équivalente dans la syntaxe abstraite
+<li> $Await(nom)$ permet de construire un $Await$ d'un événement désigné par $nom$, il se traduit en une construction totalement équivalente dans la syntaxe abstraite
+<li> $Loop(p)$ permet de construire une boucle infinie $Loop$ d'un programme p, il se traduit en une construction totalement équivalente dans la syntaxe abstraite
+</ul>
