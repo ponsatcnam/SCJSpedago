@@ -7,6 +7,10 @@ if(zeArgs[0]=='html'){
   console.error("html mode");
   mode=zeArgs[0];
   }
+else if(zeArgs[0]=='proof'){
+  console.error("proof mode");
+  mode=zeArgs[0];
+  }
 
 function getInstName(str){
   const m=str.match(/\w+/);
@@ -79,7 +83,15 @@ for(var op of SynAbs){
   operators[op]=new Term(op);
   }
 
-if('imp'==mode){
+if('imp'==mode||'proof'==mode){
+  console.log(
+`let zeArgs=process.argv.slice(2);
+var mode='imp';
+
+if(zeArgs[0]=='proof'){
+  mode=zeArgs[0];
+  }  
+`);
   fs.readFile('base_rewrite.js', 'utf8', function(err, data){
     console.log(data);
     });
@@ -98,6 +110,7 @@ fs.readFile('semantics.js', 'utf8', function(err, data){
       const conc=lignes[i+1].trim();
       const rule={ hyp: hyp.split(/\s*;\s*/g), conc: conc.split(/\s*->\s*/g) };
       switch(mode){
+        case 'proof':
         case 'imp':{
           for(var idx in rule.hyp){
             rule.hyp[idx]=rule.hyp[idx].replace(/(\w+)\s*([∈∉])\s*E[0-9]*[_]*/, function(match, name, e){
@@ -126,24 +139,45 @@ fs.readFile('semantics.js', 'utf8', function(err, data){
         }
       }
     }
-  if(mode=='imp'){
+  if(mode=='imp'||mode=='proof'){
+    /*if(mode=='proof'){
+      console.log(`var proofTree=null`);
+      }*/
+    console.log(`function react(p){`);
+    /*if(mode=='proof'){
+      console.log(`  proofTree=NodeJax([], null);`);
+      }*/
+    console.log(`  let {t, E, end }=instant(p, {});`);
+    if(mode=='proof'){
+      console.log(`  const predicates=[proof_last];
+  const rule=new RuleJax(\`\${p.toMath()} \\\\require{mathtools}\\\\Rrightarrow \${t.toMath()}, \${Set_toMath(E)}\`);
+  console.log(new NodeJax(predicates, rule).toMath());`);
+      }
+    if(mode=='imp'){
+      console.log(
+`  console.error(' ==> ', end?'fini':'pas fini', ':', t, 'in', E);`);
+      }
     console.log(
-`function react(p){
-  let {t, E, end }=instant(p, {});
-  console.error(' ==> ', end?'fini':'pas fini', ':', t, 'in', E);
-  return t;
+`  return t;
   }
-function instant(p, E){
-  let { nm, t: res, E: out }=activ(new Close(p), E);
-  return {t: res, E: out, end: nm=="TERM"};
+function instant(p, E){`);
+    console.log(`  let { nm, t: res, E: out }=activ(new Close(p), E);`);
+    if(mode=='proof'){
+      console.log(`  const predicates=[proof_last];
+  const rule=new RuleJax(\`\${p.toMath()}, \${Set_toMath(E)} \\\\require{mathtools}\\\\Rightarrow \${res.toMath()}, \${Set_toMath(out)}\`);
+  proof_last=NodeJax(predicates, rule);`);
+      }
+    console.log(
+`  return {t: res, E: out, end: nm=="TERM"};
   }
+var proof_last=null;
 `);
-  function rule_transform(conc){
-    conc=conc.replace(/(E[0-9]*[_]*) ∪ {(.*)}/g, function(match, e0, toAdd){
-      return `Set_add(${e0}, [ ${toAdd} ])`;
-      });
-    return conc;
-    }
+    function rule_transform(conc){
+      conc=conc.replace(/(E[0-9]*[_]*) ∪ {(.*)}/g, function(match, e0, toAdd){
+        return `Set_add(${e0}, [ ${toAdd} ])`;
+        });
+      return conc;
+      }
   for(var op of Object.keys(operators)){
     console.log(`function ${op}(...args){
       if(!(this instanceof ${op})){
@@ -151,14 +185,31 @@ function instant(p, E){
         }
       this.nm='${op}';
       var i=0;
+      this.a=[];
       for(var a of args){
         this["a"+(i++)]=a;
+        this.a.push(a);
         }
-      }`);
+      };
+${op}.prototype.toString=function(){
+  return this.toMath();
+  }
+${op}.prototype.toMath=function(){
+  let res=this.nm+'(';
+  for(var i in this.a){
+    const a=this.a[i];
+    res+=(0!=i?', ':'')+a.toString();
+    }
+  return res+')';
+  }`);
     }
   console.log(`function activ(term, E){
-    //console.log("activ: term=", term, " E=", E);
-    switch(term.nm){`);
+    //console.log("activ: term=", term, " E=", E);`);
+    if('proof'==mode){
+      console.log(`  var proof_hyps=[];proof_last=null;`);
+      }
+  console.log(
+`  switch(term.nm){`);
     for(var nm of Object.keys(operators)){
       const op=operators[nm];
       const rules=op.activ;
@@ -175,6 +226,9 @@ function instant(p, E){
   -------------------
   ${conc}
   */`);
+        if('proof'==mode){
+          console.log(`      proof_hyps=[];proof_last=null;`);
+          }
         for(var h of hyps){
           if(/\s*->\s*/.test(h)){
             const rwr=h.split(/\s*->\s*/g);
@@ -199,9 +253,16 @@ function instant(p, E){
           else{
             console.log(`      if(${h}){`);
             }
+          if('proof'==mode){
+            console.log(`      proof_hyps.push(proof_last?proof_last:new PredicateJax('${h}'));`);
+            }
+          }
+        console.log(`      var rule_res=${rule_transform(conc[1])};`);
+        if('proof'==mode){
+          console.log(`      proof_last=new NodeJax(proof_hyps, new RuleJax(\`\${term.toMath()}, \${Set_toMath(E)} \\\\require{mathtools}\\\\xrightarrow{~${conc[1].substr(0,4)}~} \${rule_res.t.toMath()}, \${Set_toMath(rule_res.E)}\`))`);
           }
         console.log(`/*console.log('${hyps}\\n-----------\\n${conc}');*/
-          return ${rule_transform(conc[1])};`);
+          return rule_res;`);
         for(var h of hyps){
           console.log(`        }`);
           }
@@ -404,8 +465,12 @@ function instant(p, E){
         }
         console.log("</ol>");
       }
-    console.log(` </body>
-</html>`);
+    console.log(`
+    <hr>
+    <h2>Test</h2>`);
+    //<iframe src="test.html" style="border:0" width="100%"></iframe>`);
+    /*console.log(` </body>
+</html>`);*/
     }
   });
 

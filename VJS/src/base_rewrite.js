@@ -2,9 +2,75 @@
 Basic functions for the implementation of rewritting rules.
 */
 
+function RuleJax(s){
+  if(!(this instanceof RuleJax)){
+    return new PredicateJax(s);
+    }
+  this.rule=s;
+  };
+RuleJax.prototype.toMath=function(){
+  let res=this.rule;
+  return res;
+  };
+RuleJax.prototype.toString=function(){
+  return this.toMath();
+  };
+
+function PredicateJax(s){
+  if(!(this instanceof PredicateJax)){
+    return new PredicateJax(s);
+    }
+  this.predicate=s;
+  };
+PredicateJax.prototype.toMath=function(){
+  let res=this.predicate;
+  return res;
+  };
+PredicateJax.prototype.toString=function(){
+  return this.toMath();
+  };
+
+function NodeJax(predicates, rule){
+  if(!(this instanceof NodeJax)){
+    return new NodeJax(predicates,  rule);
+    }
+  this.predicates=predicates;
+  this.rule=rule;
+  };
+NodeJax.prototype.toMath=function(){
+  let res='';
+  if(1==this.predicates.length && this.predicates[0]=='true'){
+    res+=this.rule.toMath();
+    }
+  else{
+    res='\\frac{';
+    for(var i in this.predicates){
+      const p=this.predicates[i];
+      res+=(0!=i)?'\\hspace{1cm}':'';
+      if(p.toMath){
+        res+=p.toMath();
+        }
+      else{
+        res+=p;
+        }
+      }
+    res+='}{';
+    res+=this.rule.toMath();
+    res+='}';
+    }
+  return res;
+  };
+NodeJax.prototype.toString=function(){
+  return this.toMath();
+  };
+
+
 /* Gestion des listes */
 const nil=[];
 
+nil.toMath=function(){
+  return "[]";
+  }
 function head(l){
   return l[0];
   }
@@ -25,6 +91,23 @@ function cons(head, tail){
     }
   return res;
   }
+function List_toMath(l){
+  var res='[';
+  for(var idx in l){
+    const e=l[idx];
+    res+=(0!=idx?', ':'');
+    if(e.nm=="_SUSP"){
+      res+=`\\overset{○}{${e.a0.toMath()}}`;
+      }
+    else if(e.nm=="_STOP"){
+      res+=`\\overset{●}{${e.a0.toMath()}}`;
+      }
+    else{
+      res+=e.a0.toMath();
+      }
+    }
+  return res+']';
+  }
 function List_isHeadSUSP(l){
   //console.log('** is SUSP', l[0]);
   if(l[0] instanceof _SUSP){
@@ -38,6 +121,9 @@ function List_isHeadSTOP(l){
     }
   return false;
   }
+function _List_isNotEmpty(l){
+  return `${l}≠[]`;
+  };
 function List_isNotEmpty(l){
   return (l?l:[]).length>0;
   };
@@ -83,7 +169,17 @@ function Set_add(E, set){
     }
   return res;
   }
-
+function Set_toMath(E){
+  let res="\\{";
+  let ks=Object.keys(E);
+  let n=true;
+  for(var i of ks){
+    const e=E[i];
+    res+=(n?', ':'')+e;
+    n=false;
+    }
+  return res+'\\}';
+  };
 /*
 Gestion des marqueurs d'exécution des branches du parallèle.
 */
