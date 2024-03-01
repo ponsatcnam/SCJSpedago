@@ -2,11 +2,37 @@
 Basic functions for the implementation of rewritting rules.
 */
 
-function RuleJax(s){
+function RuleJax(params){
   if(!(this instanceof RuleJax)){
-    return new PredicateJax(s);
+    return new PredicateJax(params);
     }
-  this.rule=s;
+  if(params.str){
+    this.rule=param.str;
+    }
+  else{
+    switch(params.nm){
+      case 'react':{
+	this.arrow='~\\Rrightarrow~';
+	this.type=0;
+	break;
+	}
+      case 'instant':{
+	this.arrow='~\\Rightarrow~';
+	this.type=1;
+	break;
+	}
+      case 'activ':{
+	this.arrow='~\\xrightarrow{~~}';
+	this.type=2;
+	break;
+	}
+      case 'eoi':{
+	this.arrow='~\\longmapsto~';
+	this.type=3;
+	break;
+	}
+      }
+    }
   };
 RuleJax.prototype.toMath=function(){
   let res=this.rule;

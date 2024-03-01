@@ -467,10 +467,10 @@ ${op}.prototype.toMath=function(){
       }
     console.log(`
     <hr>
-    <h2>Test</h2>`);
-    //<iframe src="test.html" style="border:0" width="100%"></iframe>`);
-    /*console.log(` </body>
-</html>`);*/
+    <h2>Test</h2>
+    <iframe src="test.html" style="border:0" width="100%"></iframe>`);
+    console.log(` </body>
+</html>`);
     }
   });
 
