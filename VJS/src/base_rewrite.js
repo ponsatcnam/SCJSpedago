@@ -2,31 +2,39 @@
 Basic functions for the implementation of rewritting rules.
 */
 
+/* ** RuleJax **
+Protoype d'objet pour gérer les règles de réécritures (les dénominateurs).
+*/
 function RuleJax(params){
+  // Permet d'éviter les new
   if(!(this instanceof RuleJax)){
-    return new PredicateJax(params);
+    return new RuleJax(params);
     }
   if(params.str){
-    this.rule=param.str;
+    this.rule= param.str;
     }
   else{
     switch(params.nm){
       case 'react':{
-	this.arrow='~\\Rrightarrow~';
-	this.type=0;
+	// triple fèche du réact
+	this.arrow= '~\\Rrightarrow~';
+	this.type= 0;
 	break;
 	}
       case 'instant':{
-	this.arrow='~\\Rightarrow~';
+	// double fèlche du instant
+	this.arrow= '~\\Rightarrow~';
 	this.type=1;
 	break;
 	}
       case 'activ':{
+	// la flèche de l'activation avec le status au dessus.
 	this.arrow='~\\xrightarrow{~~}';
 	this.type=2;
 	break;
 	}
       case 'eoi':{
+	// la flèche de la règle utilisée à la fin de l'instant.
 	this.arrow='~\\longmapsto~';
 	this.type=3;
 	break;
@@ -35,73 +43,87 @@ function RuleJax(params){
     }
   };
 RuleJax.prototype.toMath=function(){
-  let res=this.rule;
+  // retourne le latex directement.
+  let res= this.rule;
   return res;
   };
 RuleJax.prototype.toString=function(){
   return this.toMath();
   };
 
+/* ** PredicateJax **
+Protoype d'objet pour gérer les prédicats.
+*/
 function PredicateJax(s){
   if(!(this instanceof PredicateJax)){
     return new PredicateJax(s);
     }
-  this.predicate=s;
+  this.predicate= s;
   };
 PredicateJax.prototype.toMath=function(){
-  let res=this.predicate;
+  let res= this.predicate;
   return res;
   };
 PredicateJax.prototype.toString=function(){
   return this.toMath();
   };
 
+/* ** NodeJax **
+Un nœud complet avec des prédicas et une règle.
+*/
 function NodeJax(predicates, rule){
   if(!(this instanceof NodeJax)){
     return new NodeJax(predicates,  rule);
     }
-  this.predicates=predicates;
-  this.rule=rule;
+  this.predicates= predicates;
+  this.rule= rule;
   };
-NodeJax.prototype.toMath=function(){
-  let res='';
-  if(1==this.predicates.length && this.predicates[0]=='true'){
-    res+=this.rule.toMath();
-    }
-  else{
-    res='\\frac{';
-    for(var i in this.predicates){
-      const p=this.predicates[i];
-      res+=(0!=i)?'\\hspace{1cm}':'';
-      if(p.toMath){
-        res+=p.toMath();
+NodeJax.prototype.toMath= function(){
+    let res= '';
+    if(1==this.predicates.length){
+      if("string"==typeof(this.predicates[0]) && 'true'==this.predicates[0]){
+        res= this.rule.toMath();
         }
-      else{
-        res+=p;
-        }
+      console.warn("NodeJax: ", this.predicates);
       }
-    res+='}{';
-    res+=this.rule.toMath();
-    res+='}';
-    }
-  return res;
-  };
-NodeJax.prototype.toString=function(){
-  return this.toMath();
-  };
+    else{
+      res= '\\frac{';
+      for(var i in this.predicates){
+        const p= this.predicates[i];
+        res+= (0!=i)?'\\hspace{1cm}':'';
+        if(p.toMath){
+          res+= p.toMath();
+          }
+        else{
+          res+= p;
+          }
+        }
+      res+= '}{';
+      res+= this.rule.toMath();
+      res+= '}';
+      }
+    return res;
+    };
+NodeJax.prototype.toString= function(){
+    return this.toMath();
+    };
 
 
 /* Gestion des listes */
 const nil=[];
 
-nil.toMath=function(){
-  return "[]";
-  }
+Object.defineProperty(nil, "toMath"
+, { value: function(){
+        return "[]";
+        }
+  , enumerable: false
+    }
+  );
 function head(l){
   return l[0];
-  }
+  };
 function tail(l){
-  let res=[];
+  let res= [];
   for(var i in l){
     if(0==i){
       continue;
@@ -109,33 +131,32 @@ function tail(l){
     res.push(l[i]);
     }
   return res;
-  }
+  };
 function cons(head, tail){
-  let res=[head];
+  let res= [head];
   for(var elt of tail){
     res.push(elt);
     }
   return res;
-  }
+  };
 function List_toMath(l){
-  var res='[';
+  var res= '[';
   for(var idx in l){
-    const e=l[idx];
-    res+=(0!=idx?', ':'');
+    const e= l[idx];
+    res+= (0!=idx?', ':'');
     if(e.nm=="_SUSP"){
-      res+=`\\overset{○}{${e.a0.toMath()}}`;
+      res+= `\\overset{○}{${e.a0.toMath()}}`;
       }
     else if(e.nm=="_STOP"){
-      res+=`\\overset{●}{${e.a0.toMath()}}`;
+      res+= `\\overset{●}{${e.a0.toMath()}}`;
       }
     else{
-      res+=e.a0.toMath();
+      res+= e.a0.toMath();
       }
     }
   return res+']';
   }
 function List_isHeadSUSP(l){
-  //console.log('** is SUSP', l[0]);
   if(l[0] instanceof _SUSP){
     return l[0].t;
     }
@@ -154,21 +175,21 @@ function List_isNotEmpty(l){
   return (l?l:[]).length>0;
   };
 function List_isEmpty(l){
-  return (l?l:[]).length===0;
+  return 0===(l?l:[]).length;
   };
 
 /*
 Gestion des ensembles (événements/signaux).
 */
 function Set_eq(E, E_){
-  let keyE_=Object.keys(E_);
+  let keyE_= Object.keys(E_);
   for(var elt of Object.keys(E)){
     if(!keyE_.includes(elt)){
       return false;
       }
     }
   return true;
-  }
+  };
 function Set_neq(E, E_){
   let keyE_=Object.keys(E_);
   for(var elt of Object.keys(E)){
@@ -177,18 +198,17 @@ function Set_neq(E, E_){
       }
     }
   return false;
-  }
+  };
 function Set_isIn(E, elt){
-  //console.log(`${elt} is in ${E} : ${Object.keys(E).includes(elt)}`);
   return Object.keys(E).includes(elt);
-  }
+  };
 function Set_isNotIn(E, elt){
   return !Set_isIn(E, elt);
-  }
+  };
 function Set_add(E, set){
-  var res={};
+  var res= {};
   for(var elt of Object.keys(E)){
-    res[elt]=true;
+    res[elt]= true;
     }
   for(var elt of set){
     res[elt]=true;
@@ -196,13 +216,13 @@ function Set_add(E, set){
   return res;
   }
 function Set_toMath(E){
-  let res="\\{";
-  let ks=Object.keys(E);
-  let n=true;
+  let res= "\\{";
+  let ks= Object.keys(E);
+  let n= true;
   for(var i of ks){
-    const e=E[i];
-    res+=(n?', ':'')+e;
-    n=false;
+    const e= E[i];
+    res+= (n?', ':'')+e;
+    n= false;
     }
   return res+'\\}';
   };
@@ -213,15 +233,15 @@ function _SUSP(t){
   if(!(this instanceof _SUSP)){
     return new _SUSP(t);
     }
-  this.nm='_SUSP';
-  this.t=t;
+  this.nm= '_SUSP';
+  this.t= t;
   }
 function _STOP(t){
   if(!(this instanceof _STOP)){
     return new _STOP(t);
     }
-  this.nm='_STOP';
-  this.t=t;
+  this.nm= '_STOP';
+  this.t= t;
   }
 
 /*
@@ -231,25 +251,25 @@ function SUSP(t, E){
   if(!(this instanceof SUSP)){
     return new SUSP(t, E);
     }
-  this.nm='SUSP';
-  this.t=t;
-  this.E=E;
+  this.nm= 'SUSP';
+  this.t= t;
+  this.E= E;
   }
 function STOP(t, E){
   if(!(this instanceof STOP)){
     return new STOP(t, E);
     }
-  this.nm='STOP';
-  this.t=t;
-  this.E=E;
+  this.nm= 'STOP';
+  this.t= t;
+  this.E= E;
   }
 function TERM(t, E){
   if(!(this instanceof TERM)){
     return new TERM(t, E);
     }
-  this.nm='TERM';
-  this.t=t;
-  this.E=E;
+  this.nm= 'TERM';
+  this.t= t;
+  this.E= E;
   }
 
 /*

@@ -1,22 +1,40 @@
 const fs=require('fs');
 
-let zeArgs=process.argv.slice(2);
-var mode='imp';
+let zeArgs= process.argv.slice(2);
+var mode= 'imp';
 
 if(zeArgs[0]=='html'){
-  console.error("html mode");
-  mode=zeArgs[0];
+  console.warn("html mode");
+  mode= zeArgs[0];
   }
 else if(zeArgs[0]=='proof'){
-  console.error("proof mode");
-  mode=zeArgs[0];
+  console.warn("proof mode");
+  mode= zeArgs[0];
   }
 
 function getInstName(str){
-  const m=str.match(/\w+/);
+  const m= str.match(/\w+/);
   return m[0];
-  }
+  };
 
+/*
+Liste des instructions de la syntaxe concrète
+*/
+const SynConcrete=[
+  "Seq"
+, "Par"
+, "Nothing"
+, "Stop"
+, "Loop"
+, "Generate"
+, "Await"
+, "Atom"
+, "PrintAtom"
+  ];
+
+/*
+Liste des instructions de la syntaxe abstraite
+*/
 const SynAbs=[
   "Close"
 , "Seq"
@@ -31,21 +49,58 @@ const SynAbs=[
 , "PrintAtom"
   ];
 
+/*
+Un terme, traduit dans la syntaxe abstraite à toujour la forme d'un nom suivit
+d'une liste de paramètres entre parenthèses.
+ex:
+  1. Pause()
+  2. Seq(Pause(), Pause())
+  ...
+*/
+
+/*
+-----------
+On commence par définir 2 fonction utilitaires
+*/
+/*
+Fonction termTL():
+Permet d'extraire un terme wrappé dans un statut:
+ Statut(term) -> term
+
+Sachant qu'un term est un nom suivit d'une liste de paramètres entre
+parenthèses, on peut récupérer le nom du terme (getInstName) puis le contenu
+des paramètres entre parenthèse pour retourner finalement un objet constitué :
+- du nom de l'instruction (nm)
+- du code de l'instruction (opc)
+- et de ses paramètres (synx)
+*/
 function termTL(str){
-const inst=str.substring(str.indexOf("(")+1, str.length-1);
-  const inm=getInstName(inst);
+  const inst= str.substring(str.indexOf("(")+1, str.length-1);
+  const inm= getInstName(inst);
   const syn=inst.match(/\(.*\)/g);
   const syntax=syn?syn[0].substr(1, syn[0].length-2):"";
   return { nm: inm, opc: SynAbs.indexOf(inm), synx: syntax };
-  }
-function syn_extract(str){
-  const m=str.match(/\w+\s*\((.*)\)/);
-  const couple=m[1];
-  const ts=couple.lastIndexOf(',');
-  const term=couple.substr(0,ts).trim();
-  const names=term.match(/(Nothing|[tpl][0-9]*[_]+|u[0-9]*[_]*)/g);
+  };
+/*
+Fonction qui produit un format intermédiaire d'un terme-status abstrait.
+Il extrait les variables des sous termes et la variable d'environnement.
+On lui passe un terme-status dans la syntaxe abstraite en paramètre.
+par exemple :
+  TERM(Nothing(), E__) => { t: { a0: _Nope }, E: E__ }
+ou encore
+  STOP(Par(l_), E__) => { t: { a0: l_ }, E: E__ }
 
-  const E=couple.substr(ts+1).trim();
+Cette fonction permet d'exploiter la destructuration de terme de javascipt.
+*/
+function syn_extract(str){
+  const m= str.match(/\w+\s*\((.*)\)/);
+  const couple= m[1];
+  // La dernière virgule sépare le terme et son environement
+  const ts=couple.lastIndexOf(',');
+  // On nétoie les espaces si besoin.
+  const term=couple.substr(0, ts).trim();
+  const names=term.match(/(Nothing|[tpl][0-9]*[_]+|u[0-9]*[_]*)/g);
+  const E= couple.substr(ts+1).trim();
   //console.error(str, "->", m, m[1], "term=", term, 'E=', E, "names=", names);
   var t=`${term}`;
   if(term.startsWith("Nothing")){
@@ -58,15 +113,32 @@ function syn_extract(str){
     t=`{ a0: [${names[0]}] }`;
     }
   return `t: ${t}, E: ${E}`;
-  }
+  };
+// On definit une fonction utilitaire qui transforme un prédicat de type
+// union en un appelle de fonction Set_add()
+function rule_transform(conc){
+  conc= conc.replace(/(E[0-9]*[_]*) ∪ {(.*)}/g, function(match, e0, toAdd){
+    return `Set_add(${e0}, [ ${toAdd} ])`;
+    });
+  return conc;
+  };
 
+/*
+L'objet de protype Term va permettre de produire le code correspondant à une
+instruction à partir des règles.
+Chaque Term aura :
+- un nom (nm) issus de la syntaxe abstraite
+- un code (opc) ordre dans le tableau des instructions de la syntaxe abstraite.
+- des règles d'activation dans l'instant (activ)
+- des règles à appliquer à la fin de l'instant (eoi)
+*/
 function Term(nm){
-  this.nm=nm
-  this.opc=SynAbs.indexOf(nm);
-  this.activ=[];
-  this.eoi=[];
-  this.instant=[];
-  this.syntax=undefined;
+  this.nm= nm;
+  this.opc= SynAbs.indexOf(nm);
+  this.activ= [];
+  this.eoi= [];
+  this.instant= [];
+  this.syntax= undefined;
   };
 Term.prototype.addRule=function(r){
   if(r.conc[0].startsWith("activ")){
@@ -79,46 +151,79 @@ Term.prototype.addRule=function(r){
 
 const operators={};
 
+/*
+On crée un objet Term pour chaque Mots de la syntaxe abstraite (Chacun de ces
+mots apparaissent dans les règles...)
+*/
 for(var op of SynAbs){
-  operators[op]=new Term(op);
+  operators[op]= new Term(op);
   }
 
+/*
+On ne produit pas la même chose sur la sortie standard (stdout) selon que l'on
+souhaite produire le code exécutable ou la version latex des règles...
+Le paramètre mode sert à ça...
+*/
 if('imp'==mode||'proof'==mode){
+  // Si on cherche à produire l'immlantation ou le constructeur d'arbre de
+  // peuve on écrit le bout de programme suivant...
   console.log(
 `let zeArgs=process.argv.slice(2);
-var mode='imp';
+var mode= 'imp';
 
 if(zeArgs[0]=='proof'){
   mode=zeArgs[0];
   }  
 `);
+  // Puis on ajoute le contenu de base_rewrite.js à la sortie standard...
   fs.readFile('base_rewrite.js', 'utf8', function(err, data){
     console.log(data);
     });
   }
 else if('html'==mode){
+  // Si on produit le fichier html 
   fs.readFile('base_rewrite.html', 'utf8', function(err, data){
     console.log(data);
     });
   }
+// On ouvre le fichier semantics.js en lecture
 fs.readFile('semantics.js', 'utf8', function(err, data){
-  const comments=data.match(/\/\*(?:.|\n)*?\*\//gm);
-  const lignes=comments.join("").split("\n");
+  // On récupère grace à une expression régulière le contenu des commentaires
+  // dont les commentaires contenant les règles.
+  const comments= data.match(/\/\*(?:.|\n)*?\*\//gm);
+  // On fait une seule chaîne de caractère à partir de tous les commentaires et
+  // on explose en ligne le résultat de la concaténation.
+  const lignes= comments.join("").split("\n");
+  //On va maintenant parcourir le tableau résultant en recherchant les lignes
+  //qui commence par '----' qui symbolise le trait de fraction des règles
+  //conditionnelles.
   for(var i=0; i<lignes.length; i++){
     if(/----/.test(lignes[i])){
+      // Si on trouve une telle ligne, la ligne d'avant contient les hypothèses
+      // la ligne d'après la règle de réécriture.
+      // On nettoie les espaces autour..
       const hyp=lignes[i-1].trim();
       const conc=lignes[i+1].trim();
+      // on split les hypothèses sur les ';'
+      // et la règle de réécriture sur la flèche '->'
       const rule={ hyp: hyp.split(/\s*;\s*/g), conc: conc.split(/\s*->\s*/g) };
+      // On transforme dès maintenant ceraines hypothèses pour la génération de
+      // code et des arbres de preuve.
       switch(mode){
         case 'proof':
         case 'imp':{
           for(var idx in rule.hyp){
+	    // Ainsi si une hypothèse est de la forme ∈ ou ∉ on remplace ça par
+	    // l'appelle d'une fonction qui s'évaluera dans un boolean.
             rule.hyp[idx]=rule.hyp[idx].replace(/(\w+)\s*([∈∉])\s*E[0-9]*[_]*/, function(match, name, e){
               return `Set_is${'∉'==e?'Not':''}In(E, ${name})`;
               });
+	    // Transformation des hypothèses sur le status de la tête d'une
+	    // liste (pour la séquence ou le par essentiellement)
             rule.hyp[idx]=rule.hyp[idx].replace(/\s*head\s*\((.+)\)\s*=\s*_(SUSP|STOP)\((.+)\)/, function(match, list, s, p){
               return `const ${p}=List_isHead${s}(${list});`;
               });
+	    // Transformation de l'hypthèse sur la liste vide.
             rule.hyp[idx]=rule.hyp[idx].replace(/\s*(\w+)\s*([=≠])\s*nil\s*/, function(match, list, op){
               return `List_is${op=="="?"":"Not"}Empty(${list})`;
               });
@@ -126,8 +231,12 @@ fs.readFile('semantics.js', 'utf8', function(err, data){
           break;
           }
         }
-      const term=termTL(rule.conc[0]);
-      const zeTerm=operators[term.nm];
+      // On applique termTL sur le membre gauche de la règle pour extraire le
+      // nom du terme et pouvoir comme ça regrouper les règles en fonction de
+      // l'instruction à lauquelle une règle se rapporte.
+      const term= termTL(rule.conc[0]);
+      // À partir du nom du extrait on retrouve l'objet Term correspondant.
+      const zeTerm= operators[term.nm];
       if(zeTerm){
         if(undefined==zeTerm.syntax){
           zeTerm.syntax=term.synx;
@@ -137,17 +246,19 @@ fs.readFile('semantics.js', 'utf8', function(err, data){
           }
         zeTerm.addRule(rule);
         }
+      else{
+	// Pour le moment le statut des règle de react() et instant() sont
+	// traitées de façon statique à la main... Faudra probablement faire
+	// mieux...
+	console.warn("no term for that rule", rule);
+        }
       }
     }
   if(mode=='imp'||mode=='proof'){
-    /*if(mode=='proof'){
-      console.log(`var proofTree=null`);
-      }*/
+    // **** Générateur de code.
+    // on commence par écrire ce que fait react.
     console.log(`function react(p){`);
-    /*if(mode=='proof'){
-      console.log(`  proofTree=NodeJax([], null);`);
-      }*/
-    console.log(`  let {t, E, end }=instant(p, {});`);
+    console.log(`  let {t, E, end }= instant(p, {});`);
     if(mode=='proof'){
       console.log(`  const predicates=[proof_last];
   const rule=new RuleJax(\`\${p.toMath()} \\\\require{mathtools}\\\\Rrightarrow \${t.toMath()}, \${Set_toMath(E)}\`);
@@ -165,87 +276,133 @@ function instant(p, E){`);
     if(mode=='proof'){
       console.log(`  const predicates=[proof_last];
   const rule=new RuleJax(\`\${p.toMath()}, \${Set_toMath(E)} \\\\require{mathtools}\\\\Rightarrow \${res.toMath()}, \${Set_toMath(out)}\`);
-  proof_last=NodeJax(predicates, rule);`);
+  proof_last= NodeJax(predicates, rule);`);
       }
     console.log(
 `  return {t: res, E: out, end: nm=="TERM"};
   }
-var proof_last=null;
+var proof_last= null;
 `);
-    function rule_transform(conc){
-      conc=conc.replace(/(E[0-9]*[_]*) ∪ {(.*)}/g, function(match, e0, toAdd){
-        return `Set_add(${e0}, [ ${toAdd} ])`;
-        });
-      return conc;
-      }
+  // On parcours chaque objet Term pour créés pour chaque instruction de la
+  // syntaxe abstraite et qui est maintenant rempli avec les différentes règles
+  // le concernant.
   for(var op of Object.keys(operators)){
+    // On crée un constructeur pour l'instruction
     console.log(`function ${op}(...args){
       if(!(this instanceof ${op})){
         return new ${op}(...args);
         }
-      this.nm='${op}';
-      var i=0;
-      this.a=[];
+      this.nm= '${op}';
+      var i= 0;
+      this.a= [];
       for(var a of args){
-        this["a"+(i++)]=a;
+	// Dans l'objet on ajoute un champs pour chaque entrée passée en
+	// argument
+        this["a"+(i++)]= a;
         this.a.push(a);
         }
       };
-${op}.prototype.toString=function(){
-  return this.toMath();
-  }
-${op}.prototype.toMath=function(){
-  let res=this.nm+'(';
-  for(var i in this.a){
-    const a=this.a[i];
-    res+=(0!=i?', ':'')+a.toString();
-    }
-  return res+')';
-  }`);
+${op}.prototype.toString= function(){
+    return this.toMath();
+    };
+// Pour chaque operateur on rajoute sa production en format latex...
+${op}.prototype.toMath= function(){
+    let res= this.nm+'(';
+    for(var i in this.a){
+      const a= this.a[i];
+      res+=(0!=i?', ':'')+a.toString();
+      }
+    return res+')';
+    };`);
     }
   console.log(`function activ(term, E){
-    //console.log("activ: term=", term, " E=", E);`);
+  //console.warn("activ: term=", term, " E=", E);`);
     if('proof'==mode){
-      console.log(`  var proof_hyps=[];proof_last=null;`);
+      console.log(`  var proof_hyps= []; proof_last= null;`);
       }
   console.log(
 `  switch(term.nm){`);
+    // dans activ on va poarcourir tous les opérateurs pour créer les case du
+    // switch : l'idée c'est que active devient un gros switch qui commence par
+    // déterminer quel opérateur est concerné par activ()...
     for(var nm of Object.keys(operators)){
-      const op=operators[nm];
-      const rules=op.activ;
+      const op= operators[nm];
+      // On sélectionne des règles d'activation (on fera pareille pour eoi mais
+      // avec les règles eoi).
+      const rules= op.activ;
+      // On crée le case correspondant au nom de l'opérateur...
+      // Par exemple
+      //   case 'Close':{ ... }
       console.log(`    case '${nm}':{`);
-      if(op.syntax!=""){
+      // On regarde si l'opérateur a des paramètre dans sa syntaxe.
+      // Par exemple Nothing() n'est a pas tandisq que Repeat(20, p) en a 2.
+      if(""!=op.syntax){
+	// On destructure l'objet js pour initialiser les varaibles dans le
+	// code produit...
         console.log(`      const {a0: ${op.syntax}}=term;`);
         }
-      var nb=0;
+      var nb= 0;
+      // On va parcourir chaque règle de activ pour cet opérateur et les
+      // évaluer pour sélectionner la règle de réécriture qui fonctionne pour
+      // le terme d'entrée forni en paramètre de la fonction activ().
       for(var r of rules){
-        const hyps=r.hyp;
-        const conc=r.conc;
+        const hyps= r.hyp;
+        const conc= r.conc;
+	// Dans le code produit on met en commentaire la règle telle que
+	// décrite dans le fichier semantics.js
         console.log(`/*
   ${hyps}
   -------------------
   ${conc}
   */`);
+	// Ensuite on commence à écrire le code produit par la transformation
+	// des règles en code exécutable ou en arbre de preuve.
         if('proof'==mode){
-          console.log(`      proof_hyps=[];proof_last=null;`);
+	  // Dans le mode de création de l'arbre de preuve on force la
+	  // réinitialisationd de proof_hyps et proof_last car chque règle
+	  // doi-être évaluée dans un environnement propre.
+	  // Comme on est dans la boucle itérant sur les règles...
+          console.log(`      proof_hyps=[]; proof_last=null;`);
           }
+	// pour chaque règle, on doit évaluer les hypothèses. On va donc
+	// considérer chaque hypothèse dans l'ordre. Et, on doit le faire dans
+	// l'ordre car certaines hypothèses fausse vont invalider les
+	// évaluations des suivantes le ';' est un «et» logique. Mais chaque
+	// hypothèse peut introduire des noms de variables nouveaux qui seront
+	// utilisés par les suivantes => rend la production de code plus simple
+	// en les évaluant dans l'ordre.
         for(var h of hyps){
+	  // On commence par le cas le plus délicat : si l'hypothèse est une
+	  // réécriture... On détecte ça en regardant si l'hypothèse contient
+	  // une flèche. A priori, on ne peut pas écrire une hypothèse avec
+	  // plusieurs flèches.
           if(/\s*->\s*/.test(h)){
-            const rwr=h.split(/\s*->\s*/g);
+	    // On split l'hypthèse autour de la flèche
+            const rwr= h.split(/\s*->\s*/g);
+	    // On va créer une variable locale qui contiendra la réécriture
+	    // issue de l'évaluation de l'hypthèse.
             const act_nm=`act_${nb++}`;
             console.log(`      const ${act_nm}=${rwr[0]};
-        if(match(${act_nm}, '${rwr[1]}')){/*console.log("subrule:", ${act_nm});*/`);
+	    // On regarde si le résultat match avec le résultat de l'hypothèse
+        if(match(${act_nm}, '${rwr[1]}')){/*console.warn("subrule:", ${act_nm});*/`);
+	    // Si oui on extrait du résultat les noms des nouvelles variables
+	    // éventuellement produites par la réécriture.
             console.log(`        const {${syn_extract(rwr[1])}}=${act_nm};`);
             }
+	  // Ooops je sais plus quel est ce type d'hypothèse. Visiblement elle
+	  // a été prétraduite en JS donc ça doit concerner les hypothèses sur
+	  // les test de status d'un terme de liste (pour le Par par exemple)...
           else if(h.startsWith('const') && /(=)/.test(h)){
             const p=h.substring(6, h.indexOf("="));
-            console.log(`      ${h};/*console.log('h=', '${h}');*/
+            console.log(`      ${h}; /*console.warn('h=', '${h}');*/
         if(${p}){`);
             }
+	  // hypthèse simple d'équivalence des ensembles
           else if(/(=)/.test(h)){
             const rwr=h.split(/\s*=\s*/g);
             console.log(`      if(Set_eq(${rwr[0]}, ${rwr[1]})){`);
             }
+	  // hypthèse simple de non équivalence des ensembles
           else if(/(≠)/.test(h)){
             const rwr=h.split(/\s*≠\s*/g);
             console.log(`      if(Set_neq(${rwr[0]}, ${rwr[1]})){`);
@@ -253,15 +410,21 @@ ${op}.prototype.toMath=function(){
           else{
             console.log(`      if(${h}){`);
             }
-          if('proof'==mode){
-            console.log(`      proof_hyps.push(proof_last?proof_last:new PredicateJax('${h}'));`);
-            }
+          /*if('proof'==mode){
+	    // Si on construit l'arbre de preuve, on rajoute à la liste des
+	    // hypthèses de la preuve.
+            console.log(`      proof_hyps.push(proof_last?proof_last:new PredicateJax('${h}'));
+      console.warn("proof hyps", proof_hyps, proof_last);`);
+            }*/
           }
         console.log(`      var rule_res=${rule_transform(conc[1])};`);
         if('proof'==mode){
-          console.log(`      proof_last=new NodeJax(proof_hyps, new RuleJax(\`\${term.toMath()}, \${Set_toMath(E)} \\\\require{mathtools}\\\\xrightarrow{~${conc[1].substr(0,4)}~} \${rule_res.t.toMath()}, \${Set_toMath(rule_res.E)}\`))`);
+          console.log(`      proof_last= new NodeJax(proof_hyps, new RuleJax(\`\${term.toMath()}, \${Set_toMath(E)} \\\\require{mathtools}\\\\xrightarrow{~${conc[1].substr(0,4)}~} \${rule_res.t.toMath()}, \${Set_toMath(rule_res.E)}\`))`);
+	  // Si on construit l'arbre de preuve, on rajoute à la liste des
+	  // hypthèses de la preuve.
+          console.log(`       proof_hyps.push(proof_last?proof_last:new PredicateJax('${h}'));`);
           }
-        console.log(`/*console.log('${hyps}\\n-----------\\n${conc}');*/
+        console.log(`/*console.warn('${hyps}\\n-----------\\n${conc}');*/
           return rule_res;`);
         for(var h of hyps){
           console.log(`        }`);

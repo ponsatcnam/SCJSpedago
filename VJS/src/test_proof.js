@@ -26,25 +26,25 @@ MathJax.Hub.Config({
  <body>
 `);
   }
-console.log(`<h3>Exécution du programme Nothing()</h3>
-Instant 1 :\$\$`);
-var term=SC.react(SC.Nothing());
-console.log("$$");
-for(var n=2; n<3; n++){
-  console.log(`Instant ${n}:\$\$`);
-  term=SC.react(term);
-  console.log("$$");
-  }
-
-console.log(`<h3>Exécution du programme Stop()</h3>
-Instant 1 :\$\$`);
-var term=SC.react(SC.Stop());
-console.log("$$");
-for(var n=2; n<3; n++){
-  console.log(`Instant ${n}:\$\$`);
-  term=SC.react(term);
-  console.log("$$");
-  }
+//console.log(`<h3>Exécution du programme Nothing()</h3>
+//Instant 1 :\$\$`);
+//var term=SC.react(SC.Nothing());
+//console.log("$$");
+//for(var n=2; n<3; n++){
+//  console.log(`Instant ${n}:\$\$`);
+//  term=SC.react(term);
+//  console.log("$$");
+//  }
+//
+//console.log(`<h3>Exécution du programme Stop()</h3>
+//Instant 1 :\$\$`);
+//var term=SC.react(SC.Stop());
+//console.log("$$");
+//for(var n=2; n<3; n++){
+//  console.log(`Instant ${n}:\$\$`);
+//  term=SC.react(term);
+//  console.log("$$");
+//  }
 
 console.log(`<h3>Exécution du programme Seq(Stop(),Stop())</h3>
 Instant 1 :\$\$`);
