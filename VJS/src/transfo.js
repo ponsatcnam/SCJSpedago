@@ -123,6 +123,10 @@ function rule_transform(conc){
   return conc;
   };
 
+function rule_right(str){
+  return "";
+  }
+
 /*
 L'objet de protype Term va permettre de produire le code correspondant à une
 instruction à partir des règles.
@@ -213,17 +217,17 @@ fs.readFile('semantics.js', 'utf8', function(err, data){
         case 'proof':
         case 'imp':{
           for(var idx in rule.hyp){
-	    // Ainsi si une hypothèse est de la forme ∈ ou ∉ on remplace ça par
-	    // l'appelle d'une fonction qui s'évaluera dans un boolean.
+            // Ainsi si une hypothèse est de la forme ∈ ou ∉ on remplace ça par
+            // l'appelle d'une fonction qui s'évaluera dans un boolean.
             rule.hyp[idx]=rule.hyp[idx].replace(/(\w+)\s*([∈∉])\s*E[0-9]*[_]*/, function(match, name, e){
               return `Set_is${'∉'==e?'Not':''}In(E, ${name})`;
               });
-	    // Transformation des hypothèses sur le status de la tête d'une
-	    // liste (pour la séquence ou le par essentiellement)
+            // Transformation des hypothèses sur le status de la tête d'une
+            // liste (pour la séquence ou le par essentiellement)
             rule.hyp[idx]=rule.hyp[idx].replace(/\s*head\s*\((.+)\)\s*=\s*_(SUSP|STOP)\((.+)\)/, function(match, list, s, p){
               return `const ${p}=List_isHead${s}(${list});`;
               });
-	    // Transformation de l'hypthèse sur la liste vide.
+            // Transformation de l'hypthèse sur la liste vide.
             rule.hyp[idx]=rule.hyp[idx].replace(/\s*(\w+)\s*([=≠])\s*nil\s*/, function(match, list, op){
               return `List_is${op=="="?"":"Not"}Empty(${list})`;
               });
@@ -247,10 +251,10 @@ fs.readFile('semantics.js', 'utf8', function(err, data){
         zeTerm.addRule(rule);
         }
       else{
-	// Pour le moment le statut des règle de react() et instant() sont
-	// traitées de façon statique à la main... Faudra probablement faire
-	// mieux...
-	console.warn("no term for that rule", rule);
+        // Pour le moment le statut des règle de react() et instant() sont
+        // traitées de façon statique à la main... Faudra probablement faire
+        // mieux...
+        console.warn("no term for that rule", rule);
         }
       }
     }
@@ -296,8 +300,8 @@ var proof_last= null;
       var i= 0;
       this.a= [];
       for(var a of args){
-	// Dans l'objet on ajoute un champs pour chaque entrée passée en
-	// argument
+        // Dans l'objet on ajoute un champs pour chaque entrée passée en
+        // argument
         this["a"+(i++)]= a;
         this.a.push(a);
         }
@@ -337,8 +341,8 @@ ${op}.prototype.toMath= function(){
       // On regarde si l'opérateur a des paramètre dans sa syntaxe.
       // Par exemple Nothing() n'est a pas tandisq que Repeat(20, p) en a 2.
       if(""!=op.syntax){
-	// On destructure l'objet js pour initialiser les varaibles dans le
-	// code produit...
+        // On destructure l'objet js pour initialiser les varaibles dans le
+        // code produit...
         console.log(`      const {a0: ${op.syntax}}=term;`);
         }
       var nb= 0;
@@ -348,81 +352,108 @@ ${op}.prototype.toMath= function(){
       for(var r of rules){
         const hyps= r.hyp;
         const conc= r.conc;
-	// Dans le code produit on met en commentaire la règle telle que
-	// décrite dans le fichier semantics.js
+        // Dans le code produit on met en commentaire la règle telle que
+        // décrite dans le fichier semantics.js
         console.log(`/*
   ${hyps}
   -------------------
   ${conc}
   */`);
-	// Ensuite on commence à écrire le code produit par la transformation
-	// des règles en code exécutable ou en arbre de preuve.
+        // Ensuite on commence à écrire le code produit par la transformation
+        // des règles en code exécutable ou en arbre de preuve.
         if('proof'==mode){
-	  // Dans le mode de création de l'arbre de preuve on force la
-	  // réinitialisationd de proof_hyps et proof_last car chque règle
-	  // doi-être évaluée dans un environnement propre.
-	  // Comme on est dans la boucle itérant sur les règles...
-          console.log(`      proof_hyps=[]; proof_last=null;`);
+          // Dans le mode de création de l'arbre de preuve on force la
+          // réinitialisationd de proof_hyps et proof_last car chque règle
+          // doi-être évaluée dans un environnement propre.
+          // Comme on est dans la boucle itérant sur les règles...
+          console.log(`      proof_hyps=[];/* proof_last=null;*/`);
           }
-	// pour chaque règle, on doit évaluer les hypothèses. On va donc
-	// considérer chaque hypothèse dans l'ordre. Et, on doit le faire dans
-	// l'ordre car certaines hypothèses fausse vont invalider les
-	// évaluations des suivantes le ';' est un «et» logique. Mais chaque
-	// hypothèse peut introduire des noms de variables nouveaux qui seront
-	// utilisés par les suivantes => rend la production de code plus simple
-	// en les évaluant dans l'ordre.
+        // pour chaque règle, on doit évaluer les hypothèses. On va donc
+        // considérer chaque hypothèse dans l'ordre. Et, on doit le faire dans
+        // l'ordre car certaines hypothèses fausse vont invalider les
+        // évaluations des suivantes le ';' est un «et» logique. Mais chaque
+        // hypothèse peut introduire des noms de variables nouveaux qui seront
+        // utilisés par les suivantes => rend la production de code plus simple
+        // en les évaluant dans l'ordre.
         for(var h of hyps){
-	  // On commence par le cas le plus délicat : si l'hypothèse est une
-	  // réécriture... On détecte ça en regardant si l'hypothèse contient
-	  // une flèche. A priori, on ne peut pas écrire une hypothèse avec
-	  // plusieurs flèches.
+          // On commence par le cas le plus délicat : si l'hypothèse est une
+          // réécriture... On détecte ça en regardant si l'hypothèse contient
+          // une flèche. A priori, on ne peut pas écrire une hypothèse avec
+          // plusieurs flèches.
           if(/\s*->\s*/.test(h)){
-	    // On split l'hypthèse autour de la flèche
+            // On split l'hypthèse autour de la flèche
             const rwr= h.split(/\s*->\s*/g);
-	    // On va créer une variable locale qui contiendra la réécriture
-	    // issue de l'évaluation de l'hypthèse.
+            // On va créer une variable locale qui contiendra la réécriture
+            // issue de l'évaluation de l'hypthèse.
             const act_nm=`act_${nb++}`;
-            console.log(`      const ${act_nm}=${rwr[0]};
-	    // On regarde si le résultat match avec le résultat de l'hypothèse
+            console.log(`      const ${act_nm}= ${rwr[0]};
+            // On regarde si le résultat match avec le résultat de l'hypothèse
         if(match(${act_nm}, '${rwr[1]}')){/*console.warn("subrule:", ${act_nm});*/`);
-	    // Si oui on extrait du résultat les noms des nouvelles variables
-	    // éventuellement produites par la réécriture.
+            // Si oui on extrait du résultat les noms des nouvelles variables
+            // éventuellement produites par la réécriture.
             console.log(`        const {${syn_extract(rwr[1])}}=${act_nm};`);
+            if('proof'==mode){
+              // Si on construit l'arbre de preuve, on rajoute à la liste des
+              // hypthèses de la preuve.
+	      console.log(`        const [ti, Ei]= ${rwr[0].replace(/activ\((.*)\)/, function(m, p){ return '[ '+p+' ]'; })};`);
+	      console.log(`        const [ sr, tr, Er ]= ${rwr[1].replace(/(\w+)\((.*)\)/, function(m, s, p){ return '[ "'+s+'", '+p+' ]'; })};`);
+              console.log(`        const zeRulle= new RuleJax({ str: \`\${ti.toMath()}, \${Set_toMath(Ei)} \\\\require{mathtools}\\\\xrightarrow{~ \${sr} ~} \${tr.toMath()}, \${Set_toMath(Er)}\` });`);
+              console.log(`        proof_hyps.push(zeRulle);`);
+              }
             }
-	  // Ooops je sais plus quel est ce type d'hypothèse. Visiblement elle
-	  // a été prétraduite en JS donc ça doit concerner les hypothèses sur
-	  // les test de status d'un terme de liste (pour le Par par exemple)...
+          // Ooops je sais plus quel est ce type d'hypothèse. Visiblement elle
+          // a été prétraduite en JS donc ça doit concerner les hypothèses sur
+          // les test de status d'un terme de liste (pour le Par par exemple)...
           else if(h.startsWith('const') && /(=)/.test(h)){
-            const p=h.substring(6, h.indexOf("="));
+            const p= h.substring(6, h.indexOf("="));
             console.log(`      ${h}; /*console.warn('h=', '${h}');*/
         if(${p}){`);
+            if('proof'==mode){
+              // Si on construit l'arbre de preuve, on rajoute à la liste des
+              // hypthèses de la preuve.
+              console.log(`        console.warn("create new predicate test", '${h}');`);
+              console.log(`        proof_hyps.push(new PredicateJax('${h}'));`);
+              }
             }
-	  // hypthèse simple d'équivalence des ensembles
+          // hypthèse simple d'équivalence des ensembles
           else if(/(=)/.test(h)){
             const rwr=h.split(/\s*=\s*/g);
             console.log(`      if(Set_eq(${rwr[0]}, ${rwr[1]})){`);
+            if('proof'==mode){
+              // Si on construit l'arbre de preuve, on rajoute à la liste des
+              // hypthèses de la preuve.
+              console.log(`        console.warn("create new predicate equ ensemble", '${h}');`);
+              console.log(`        proof_hyps.push(new PredicateJax('${h}'));`);
+              }
             }
-	  // hypthèse simple de non équivalence des ensembles
+          // hypthèse simple de non équivalence des ensembles
           else if(/(≠)/.test(h)){
             const rwr=h.split(/\s*≠\s*/g);
             console.log(`      if(Set_neq(${rwr[0]}, ${rwr[1]})){`);
+            if('proof'==mode){
+              // Si on construit l'arbre de preuve, on rajoute à la liste des
+              // hypthèses de la preuve.
+              console.log(`        console.warn("create new predicate non equ ensemble", '${h}');`);
+              console.log(`        proof_hyps.push(new PredicateJax('${h}'));`);
+              }
             }
           else{
             console.log(`      if(${h}){`);
+            if('proof'==mode){
+              // Si on construit l'arbre de preuve, on rajoute à la liste des
+              // hypthèses de la preuve.
+              console.log(`        console.warn("create new predicate autre", ${h});`);
+              console.log(`        proof_hyps.push(new PredicateJax(_${h}));`);
+              }
             }
-          /*if('proof'==mode){
-	    // Si on construit l'arbre de preuve, on rajoute à la liste des
-	    // hypthèses de la preuve.
-            console.log(`      proof_hyps.push(proof_last?proof_last:new PredicateJax('${h}'));
-      console.warn("proof hyps", proof_hyps, proof_last);`);
-            }*/
           }
-        console.log(`      var rule_res=${rule_transform(conc[1])};`);
+        // Si on arrive jusque là on a le résultat de la réécritture dans
+        // rule_res.
+        console.log(`        var rule_res=${rule_transform(conc[1])};`);
         if('proof'==mode){
-          console.log(`      proof_last= new NodeJax(proof_hyps, new RuleJax(\`\${term.toMath()}, \${Set_toMath(E)} \\\\require{mathtools}\\\\xrightarrow{~${conc[1].substr(0,4)}~} \${rule_res.t.toMath()}, \${Set_toMath(rule_res.E)}\`))`);
-	  // Si on construit l'arbre de preuve, on rajoute à la liste des
-	  // hypthèses de la preuve.
-          console.log(`       proof_hyps.push(proof_last?proof_last:new PredicateJax('${h}'));`);
+          console.log(`        const zeRuleJax= new RuleJax({ str: \`\${term.toMath()}, \${Set_toMath(E)} \\\\require{mathtools}\\\\xrightarrow{~${conc[1].substr(0,4)}~} \${rule_res.t.toMath()}, \${Set_toMath(rule_res.E)}\` });`);
+          console.log(`        proof_last= new NodeJax(proof_hyps, zeRuleJax)`);
+          console.log(`        console.warn("-->", proof_last.toMath(), "=> ", zeRuleJax.toMath());`);
           }
         console.log(`/*console.warn('${hyps}\\n-----------\\n${conc}');*/
           return rule_res;`);

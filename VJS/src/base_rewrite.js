@@ -11,7 +11,7 @@ function RuleJax(params){
     return new RuleJax(params);
     }
   if(params.str){
-    this.rule= param.str;
+    this.rule= params.str;
     }
   else{
     switch(params.nm){
@@ -80,11 +80,8 @@ function NodeJax(predicates, rule){
   };
 NodeJax.prototype.toMath= function(){
     let res= '';
-    if(1==this.predicates.length){
-      if("string"==typeof(this.predicates[0]) && 'true'==this.predicates[0]){
-        res= this.rule.toMath();
-        }
-      console.warn("NodeJax: ", this.predicates);
+    if(1==this.predicates.length && "string"==typeof(this.predicates[0]) && 'true'==this.predicates[0]){
+      res= this.rule.toMath();
       }
     else{
       res= '\\frac{';
@@ -177,7 +174,12 @@ function List_isNotEmpty(l){
 function List_isEmpty(l){
   return 0===(l?l:[]).length;
   };
+function _List_isEmpty(l){
+  return `${l}=[]`;
+  };
 
+const _true= "true";
+const _false= "false";
 /*
 Gestion des ensembles (événements/signaux).
 */

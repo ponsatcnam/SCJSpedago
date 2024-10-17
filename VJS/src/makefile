@@ -31,5 +31,5 @@ proof.js: semantics.js transfo.js base_rewrite.js
 	node transfo.js proof > $@
 
 clean:
-	rm rewrite.js semantics.html proof.js test.html
+	rm rewrite.js semantics.html proof.js test.html proof.html
 
