@@ -265,7 +265,7 @@ fs.readFile('semantics.js', 'utf8', function(err, data){
     console.log(`  let {t, E, end }= instant(p, {});`);
     if(mode=='proof'){
       console.log(`  const predicates=[proof_last];
-  const rule=new RuleJax(\`\${p.toMath()} \\\\require{mathtools}\\\\Rrightarrow \${t.toMath()}, \${Set_toMath(E)}\`);
+  const rule=new RuleJax({ str: \`\${p.toMath()} \\\\require{mathtools}\\\\Rrightarrow \${t.toMath()}, \${Set_toMath(E)}\` });
   console.log(new NodeJax(predicates, rule).toMath());`);
       }
     if(mode=='imp'){
@@ -279,7 +279,7 @@ function instant(p, E){`);
     console.log(`  let { nm, t: res, E: out }=activ(new Close(p), E);`);
     if(mode=='proof'){
       console.log(`  const predicates=[proof_last];
-  const rule=new RuleJax(\`\${p.toMath()}, \${Set_toMath(E)} \\\\require{mathtools}\\\\Rightarrow \${res.toMath()}, \${Set_toMath(out)}\`);
+  const rule=new RuleJax({ str: \`\${p.toMath()}, \${Set_toMath(E)} \\\\require{mathtools}\\\\Rightarrow \${res.toMath()}, \${Set_toMath(out)}\` });
   proof_last= NodeJax(predicates, rule);`);
       }
     console.log(
