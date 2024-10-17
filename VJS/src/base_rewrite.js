@@ -147,13 +147,15 @@ function List_toMath(l){
     const e= l[idx];
     res+= (0!=idx?', ':'');
     if(e.nm=="_SUSP"){
-      res+= `\\overset{○}{${e.a0.toMath()}}`;
+      console.warn("e in list is ", e);
+      res+= `\\overset{○}{${e.t.toMath()}}`;
       }
     else if(e.nm=="_STOP"){
-      res+= `\\overset{●}{${e.a0.toMath()}}`;
+      res+= `\\overset{●}{${e.t.toMath()}}`;
       }
     else{
-      res+= e.a0.toMath();
+      //console.warn("e in list is ", e);
+      res+= e.toMath();
       }
     }
   return res+']';
@@ -171,7 +173,7 @@ function List_isHeadSTOP(l){
   return false;
   }
 function _List_isNotEmpty(l){
-  return `${l}≠[]`;
+  return `${List_toMath(l)}≠[]`;
   };
 function List_isNotEmpty(l){
   return (l?l:[]).length>0;
@@ -180,7 +182,7 @@ function List_isEmpty(l){
   return 0===(l?l:[]).length;
   };
 function _List_isEmpty(l){
-  return `${l}=[]`;
+  return `${List_toMath(l)}=[]`;
   };
 
 const _true= "true";
