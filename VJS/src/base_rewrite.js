@@ -147,14 +147,15 @@ function List_toMath(l){
     const e= l[idx];
     res+= (0!=idx?', ':'');
     if(e.nm=="_SUSP"){
-      console.warn("e in list is ", e);
+      //console.warn("e in list is ", e);
       res+= `\\overset{○}{${e.t.toMath()}}`;
       }
     else if(e.nm=="_STOP"){
+      //console.warn("e in list is ", e);
       res+= `\\overset{●}{${e.t.toMath()}}`;
       }
     else{
-      //console.warn("e in list is ", e);
+      //console.warn("no tag : e in list is ", e);
       res+= e.toMath();
       }
     }

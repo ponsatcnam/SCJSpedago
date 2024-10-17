@@ -290,20 +290,24 @@ var proof_last= null;
   // le concernant.
   for(var op of Object.keys(operators)){
     // On crée un constructeur pour l'instruction
-    console.log(`function ${op}(...args){
-      if(!(this instanceof ${op})){
-        return new ${op}(...args);
-        }
-      this.nm= '${op}';
-      var i= 0;
-      this.a= [];
-      for(var a of args){
-        // Dans l'objet on ajoute un champs pour chaque entrée passée en
-        // argument
-        this["a"+(i++)]= a;
-        this.a.push(a);
-        }
-      };
+    console.log(`
+/* *** ${op} ***
+*/
+function ${op}(...args){
+  if(!(this instanceof ${op})){
+    return new ${op}(...args);
+    }
+  this.nm= '${op}';
+  const al= args.length;
+  this.a= [];
+  for(var i= 0; i<al; i++){
+    const a= args[i]
+    // Dans l'objet on ajoute un champs pour chaque entrée passée en argument
+    this["a"+i]= a;
+    this.a.push(a);
+    }
+  };
+
 ${op}.prototype.toString= function(){
     return this.toMath();
     };
@@ -312,7 +316,10 @@ ${op}.prototype.toMath= function(){
     let res= this.nm+'(';
     for(var i in this.a){
       const a= this.a[i];
-      res+=(0!=i?', ':'')+a.toString();
+      if("${op}"=="Par"){
+        console.warn("a", Array.isArray(a));
+	}
+      res+= (0!=i?', ':'')+(Array.isArray(a)?List_toMath(a):a.toString());
       }
     return res+')';
     };`);
