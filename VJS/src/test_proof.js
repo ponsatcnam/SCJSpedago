@@ -55,6 +55,16 @@ for(var n=2; n<4; n++){
   term=SC.react(term);
   console.log("$$");
   }
+
+console.log(`<h3>Exécution du programme Seq(Generate("e"),Await("e"))</h3>
+Instant 1 :\$\$`);
+var term=SC.react(SC.Seq(SC.Generate("e"), SC.Await("e")));
+console.log("$$");
+for(var n=2; n<4; n++){
+  console.log(`Instant ${n}:\$\$`);
+  term=SC.react(term);
+  console.log("$$");
+  }
 if('alone'==mode){
   console.log(` </body>
 </html>`);

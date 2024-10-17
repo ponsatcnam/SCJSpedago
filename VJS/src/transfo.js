@@ -180,15 +180,13 @@ if(zeArgs[0]=='proof'){
   }  
 `);
   // Puis on ajoute le contenu de base_rewrite.js à la sortie standard...
-  fs.readFile('base_rewrite.js', 'utf8', function(err, data){
-    console.log(data);
-    });
+  const data= fs.readFileSync('base_rewrite.js', 'utf8');
+  console.log(data);
   }
 else if('html'==mode){
   // Si on produit le fichier html 
-  fs.readFile('base_rewrite.html', 'utf8', function(err, data){
-    console.log(data);
-    });
+  const data= fs.readFileSync('base_rewrite.html', 'utf8');
+  console.log(data);
   }
 // On ouvre le fichier semantics.js en lecture
 fs.readFile('semantics.js', 'utf8', function(err, data){
@@ -395,10 +393,7 @@ ${op}.prototype.toMath= function(){
             if('proof'==mode){
               // Si on construit l'arbre de preuve, on rajoute à la liste des
               // hypthèses de la preuve.
-	      console.log(`        const [ti, Ei]= ${rwr[0].replace(/activ\((.*)\)/, function(m, p){ return '[ '+p+' ]'; })};`);
-	      console.log(`        const [ sr, tr, Er ]= ${rwr[1].replace(/(\w+)\((.*)\)/, function(m, s, p){ return '[ "'+s+'", '+p+' ]'; })};`);
-              console.log(`        const zeRulle= new RuleJax({ str: \`\${ti.toMath()}, \${Set_toMath(Ei)} \\\\require{mathtools}\\\\xrightarrow{~ \${sr} ~} \${tr.toMath()}, \${Set_toMath(Er)}\` });`);
-              console.log(`        proof_hyps.push(zeRulle);`);
+              console.log(`        proof_hyps.push(proof_last);`);
               }
             }
           // Ooops je sais plus quel est ce type d'hypothèse. Visiblement elle
@@ -411,7 +406,7 @@ ${op}.prototype.toMath= function(){
             if('proof'==mode){
               // Si on construit l'arbre de preuve, on rajoute à la liste des
               // hypthèses de la preuve.
-              console.log(`        console.warn("create new predicate test", '${h}');`);
+              //console.log(`        console.warn("create new predicate test", '${h}');`);
               console.log(`        proof_hyps.push(new PredicateJax('${h}'));`);
               }
             }
@@ -422,7 +417,7 @@ ${op}.prototype.toMath= function(){
             if('proof'==mode){
               // Si on construit l'arbre de preuve, on rajoute à la liste des
               // hypthèses de la preuve.
-              console.log(`        console.warn("create new predicate equ ensemble", '${h}');`);
+              //console.log(`        console.warn("create new predicate equ ensemble", '${h}');`);
               console.log(`        proof_hyps.push(new PredicateJax('${h}'));`);
               }
             }
@@ -433,7 +428,7 @@ ${op}.prototype.toMath= function(){
             if('proof'==mode){
               // Si on construit l'arbre de preuve, on rajoute à la liste des
               // hypthèses de la preuve.
-              console.log(`        console.warn("create new predicate non equ ensemble", '${h}');`);
+              //console.log(`        console.warn("create new predicate non equ ensemble", '${h}');`);
               console.log(`        proof_hyps.push(new PredicateJax('${h}'));`);
               }
             }
@@ -442,18 +437,18 @@ ${op}.prototype.toMath= function(){
             if('proof'==mode){
               // Si on construit l'arbre de preuve, on rajoute à la liste des
               // hypthèses de la preuve.
-              console.log(`        console.warn("create new predicate autre", ${h});`);
+              //console.log(`        console.warn("create new predicate autre", ${h});`);
               console.log(`        proof_hyps.push(new PredicateJax(_${h}));`);
               }
             }
-          }
+	  }
         // Si on arrive jusque là on a le résultat de la réécritture dans
         // rule_res.
         console.log(`        var rule_res=${rule_transform(conc[1])};`);
         if('proof'==mode){
           console.log(`        const zeRuleJax= new RuleJax({ str: \`\${term.toMath()}, \${Set_toMath(E)} \\\\require{mathtools}\\\\xrightarrow{~${conc[1].substr(0,4)}~} \${rule_res.t.toMath()}, \${Set_toMath(rule_res.E)}\` });`);
           console.log(`        proof_last= new NodeJax(proof_hyps, zeRuleJax)`);
-          console.log(`        console.warn("-->", proof_last.toMath(), "=> ", zeRuleJax.toMath());`);
+          //console.log(`        console.warn("-->", proof_last.toMath(), "=> ", zeRuleJax.toMath());`);
           }
         console.log(`/*console.warn('${hyps}\\n-----------\\n${conc}');*/
           return rule_res;`);
@@ -478,7 +473,7 @@ ${op}.prototype.toMath= function(){
       const rules=op.eoi;
       console.log(`    case '${nm}':{`);
       if(op.syntax!=""){
-        console.log(`      const {a0: ${op.syntax}}=term;`);
+        console.log(`      const { a0: ${op.syntax}}= term;`);
         }
       var nb=0;
       for(var r of rules){
@@ -552,7 +547,7 @@ ${op}.prototype.toMath= function(){
   avant que l'on puisse y appliquer les règles de réécritures.
   */
   
-  const SC={
+  const SC= {
     Seq: function(...args){
       let list=[];
       for(var elt of args){
@@ -592,7 +587,7 @@ ${op}.prototype.toMath= function(){
       },
     react: react
     };
-  module.exports = {
+  module.exports= {
     SC: SC
   }
   `);

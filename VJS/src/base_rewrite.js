@@ -80,7 +80,9 @@ function NodeJax(predicates, rule){
   };
 NodeJax.prototype.toMath= function(){
     let res= '';
-    if(1==this.predicates.length && "string"==typeof(this.predicates[0]) && 'true'==this.predicates[0]){
+    if(1==this.predicates.length
+        && "true"==this.predicates[0].toMath()
+	){
       res= this.rule.toMath();
       }
     else{
@@ -88,6 +90,9 @@ NodeJax.prototype.toMath= function(){
       for(var i in this.predicates){
         const p= this.predicates[i];
         res+= (0!=i)?'\\hspace{1cm}':'';
+	if("string"==typeof(p) && 'true'==p){
+	    continue;
+	  }
         if(p.toMath){
           res+= p.toMath();
           }
@@ -200,6 +205,12 @@ function Set_neq(E, E_){
       }
     }
   return false;
+  };
+function _Set_isIn(E, elt){
+  return `${elt}~∈~${Set_toMath(E)}`;
+  };
+function _Set_isNotIn(E, elt){
+  return `elt~∉~${Set_toMath(E)}`;
   };
 function Set_isIn(E, elt){
   return Object.keys(E).includes(elt);
