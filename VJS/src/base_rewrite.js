@@ -234,7 +234,7 @@ function Set_toMath(E){
   let n= true;
   for(var i of ks){
     const e= E[i];
-    res+= (n?', ':'')+e;
+    res+= (n?'':', ')+i;
     n= false;
     }
   return res+'\\}';
