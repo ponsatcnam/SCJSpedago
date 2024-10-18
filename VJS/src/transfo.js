@@ -316,9 +316,6 @@ ${op}.prototype.toMath= function(){
     let res= this.nm+'(';
     for(var i in this.a){
       const a= this.a[i];
-      if("${op}"=="Par"){
-        console.warn("a", Array.isArray(a));
-	}
       res+= (0!=i?', ':'')+(Array.isArray(a)?List_toMath(a):a.toString());
       }
     return res+')';
@@ -413,7 +410,7 @@ ${op}.prototype.toMath= function(){
             if('proof'==mode){
               // Si on construit l'arbre de preuve, on rajoute à la liste des
               // hypthèses de la preuve.
-              //console.log(`        console.warn("create new predicate test", '${h}');`);
+              console.log(`        console.warn("create new predicate test", '${h}', 'p=', '${p}');`);
               console.log(`        proof_hyps.push(new PredicateJax('${h}'));`);
               }
             }

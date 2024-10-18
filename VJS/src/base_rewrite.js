@@ -16,35 +16,50 @@ function RuleJax(params){
   else{
     switch(params.nm){
       case 'react':{
-	// triple fèche du réact
-	this.arrow= '~\\Rrightarrow~';
-	this.type= 0;
-	break;
-	}
+        this.type= 0;
+        break;
+        }
       case 'instant':{
-	// double fèlche du instant
-	this.arrow= '~\\Rightarrow~';
-	this.type=1;
-	break;
-	}
+        this.type=1;
+        break;
+        }
       case 'activ':{
-	// la flèche de l'activation avec le status au dessus.
-	this.arrow='~\\xrightarrow{~~}';
-	this.type=2;
-	break;
-	}
+        this.type=2;
+        break;
+        }
       case 'eoi':{
-	// la flèche de la règle utilisée à la fin de l'instant.
-	this.arrow='~\\longmapsto~';
-	this.type=3;
-	break;
-	}
+        this.type=3;
+        break;
+        }
       }
     }
   };
 RuleJax.prototype.toMath=function(){
   // retourne le latex directement.
-  let res= this.rule;
+  let res= '';
+  if(undefined===this.type){
+    res= this.rule;
+    }
+  else{
+    switch(this.type){
+        case 0:{
+          res+= '~\\require{mathtools}\\Rrightarrow~';
+          break;
+          }
+        case 1:{
+          res+= '~\\Rightarrow~';
+          break;
+          }
+        case 2:{
+          res+= `~\\require{mathtools}\\xrightarrow{~${this.state}~}~`;
+          break;
+          }
+        case 3:{
+          res+= '~\\longmapsto~';
+          break;
+          }
+      }
+    }
   return res;
   };
 RuleJax.prototype.toString=function(){
@@ -82,7 +97,7 @@ NodeJax.prototype.toMath= function(){
     let res= '';
     if(1==this.predicates.length
         && "true"==this.predicates[0].toMath()
-	){
+        ){
       res= this.rule.toMath();
       }
     else{
@@ -90,9 +105,9 @@ NodeJax.prototype.toMath= function(){
       for(var i in this.predicates){
         const p= this.predicates[i];
         res+= (0!=i)?'\\hspace{1cm}':'';
-	if("string"==typeof(p) && 'true'==p){
-	    continue;
-	  }
+        if("string"==typeof(p) && 'true'==p){
+            continue;
+          }
         if(p.toMath){
           res+= p.toMath();
           }
@@ -147,15 +162,12 @@ function List_toMath(l){
     const e= l[idx];
     res+= (0!=idx?', ':'');
     if(e.nm=="_SUSP"){
-      //console.warn("e in list is ", e);
       res+= `\\overset{○}{${e.t.toMath()}}`;
       }
     else if(e.nm=="_STOP"){
-      //console.warn("e in list is ", e);
       res+= `\\overset{●}{${e.t.toMath()}}`;
       }
     else{
-      //console.warn("no tag : e in list is ", e);
       res+= e.toMath();
       }
     }
