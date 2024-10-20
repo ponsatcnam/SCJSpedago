@@ -421,8 +421,8 @@ ${op}.prototype.toMath= function(){
             if('proof'==mode){
               // Si on construit l'arbre de preuve, on rajoute à la liste des
               // hypthèses de la preuve.
-              //console.log(`        console.warn("create new predicate equ ensemble", '${h}');`);
-              console.log(`        proof_hyps.push(new PredicateJax('${h}'));`);
+              console.log(`        console.warn("create new predicate equ ensemble", '${h}');`);
+              console.log(`        proof_hyps.push(new PredicateJax(_Set_eq(${rwr[0]}, ${rwr[1]})));`);
               }
             }
           // hypthèse simple de non équivalence des ensembles
@@ -433,7 +433,7 @@ ${op}.prototype.toMath= function(){
               // Si on construit l'arbre de preuve, on rajoute à la liste des
               // hypthèses de la preuve.
               //console.log(`        console.warn("create new predicate non equ ensemble", '${h}');`);
-              console.log(`        proof_hyps.push(new PredicateJax('${h}'));`);
+              console.log(`        proof_hyps.push(new PredicateJax(_Set_neq(${rwr[0]}, ${rwr[1]})));`);
               }
             }
           else{
@@ -460,7 +460,7 @@ ${op}.prototype.toMath= function(){
           console.log(`        }`);
           }
         }
-      console.log(`      throw new Error("No rule for that term");
+      console.log(`      throw new Error("No rule for that term: "+term);
         }`);
       }
     //console.log('eoi:', eoi_cases);

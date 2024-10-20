@@ -203,23 +203,31 @@ const _false= "false";
 /*
 Gestion des ensembles (événements/signaux).
 */
+function _Set_eq(E, E_){
+  return Set_toMath(E)+"="+Set_toMath(E_);
+  };
 function Set_eq(E, E_){
   let keyE_= Object.keys(E_);
-  for(var elt of Object.keys(E)){
+  let keyE= Object.keys(E);
+  let res= true;
+  for(var elt of keyE){
     if(!keyE_.includes(elt)){
-      return false;
+      res= false;
       }
     }
-  return true;
+  for(var elt of keyE_){
+    if(!keyE.includes(elt)){
+      res= false;
+      }
+    }
+  console.warn("comparing E=", E, "with E'=", E_, "for equality: ", res);
+  return res;
   };
 function Set_neq(E, E_){
-  let keyE_=Object.keys(E_);
-  for(var elt of Object.keys(E)){
-    if(!keyE_.includes(elt)){
-      return true;
-      }
-    }
-  return false;
+  return ! Set_eq(E, E_);
+  };
+function _Set_neq(E, E_){
+  return Set_toMath(E)+"≠"+Set_toMath(E_);
   };
 function _Set_isIn(E, elt){
   return `${elt}~∈~${Set_toMath(E)}`;
