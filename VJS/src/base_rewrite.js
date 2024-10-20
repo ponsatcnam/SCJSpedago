@@ -220,7 +220,6 @@ function Set_eq(E, E_){
       res= false;
       }
     }
-  console.warn("comparing E=", E, "with E'=", E_, "for equality: ", res);
   return res;
   };
 function Set_neq(E, E_){

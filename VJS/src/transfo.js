@@ -410,7 +410,7 @@ ${op}.prototype.toMath= function(){
             if('proof'==mode){
               // Si on construit l'arbre de preuve, on rajoute à la liste des
               // hypthèses de la preuve.
-              console.log(`        console.warn("create new predicate test", '${h}', 'p=', '${p}');`);
+              //console.log(`        console.warn("create new predicate test", '${h}', 'p=', '${p}');`);
               console.log(`        proof_hyps.push(new PredicateJax('${h}'));`);
               }
             }
@@ -421,7 +421,7 @@ ${op}.prototype.toMath= function(){
             if('proof'==mode){
               // Si on construit l'arbre de preuve, on rajoute à la liste des
               // hypthèses de la preuve.
-              console.log(`        console.warn("create new predicate equ ensemble", '${h}');`);
+              //console.log(`        console.warn("create new predicate equ ensemble", '${h}');`);
               console.log(`        proof_hyps.push(new PredicateJax(_Set_eq(${rwr[0]}, ${rwr[1]})));`);
               }
             }

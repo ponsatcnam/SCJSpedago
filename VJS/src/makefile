@@ -6,9 +6,9 @@ NODEJS= node
 
 ### Règles 
 
-.PHONY: clean all alone
+.PHONY: clean all alone exe
 
-all: rewrite.js html
+all: exe html alone
 	$(NODEJS) test_semantics.js
 
 html: semantics.html
@@ -16,6 +16,9 @@ html: semantics.html
 
 alone: proof.html
 	$(LAUNCH_NAV) proof.html
+
+exe: rewrite.js test_semantics.js
+	$(NODEJS) test_semantics.js
 
 proof.html: proof.js test_proof.js
 	$(NODEJS) test_proof.js alone>proof.html
