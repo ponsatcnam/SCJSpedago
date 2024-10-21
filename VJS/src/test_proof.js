@@ -21,6 +21,10 @@ MathJax.Hub.Config({
       inlineMath: [["\$","\$"],["\\\\(","\\\\)"]]
       }
   }); 
+//MathJax= {
+//  loader: {load: ['[tex]/color']},
+//  tex: {packages: {'[+]': ['color']}}
+//};
   </script>
  </head>
  <body>

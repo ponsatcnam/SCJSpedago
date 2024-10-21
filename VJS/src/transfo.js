@@ -653,7 +653,7 @@ ${op}.prototype.toMath= function(){
           for(var idx in hyps){
             let h=hyps[idx];
             h=h.replace(/_(SUSP|STOP)\s*\(([ptu][0-9]*[_]*)\)/g, function(match, st, t){
-              return '\\overset{'+(st=='STOP'?'●':'○')+'}{'+t+'}';
+              return '\\overset{'+(st=='STOP'?'●':'○')+'}{\\color{'+(st=='STOP'?'red':'blue')+'}{'+t+'}}';
             });
             predicats+=(0!=idx?'\\hspace{1cm}':'');
             predicats+=h.replace(/(activ|eoi)\((.*)\)\s*->\s*(TERM|STOP|SUSP)\((.*)\)/, function(match, activ, te, st, te_){
@@ -678,7 +678,7 @@ ${op}.prototype.toMath= function(){
         ruleText+=conc[1].replace(/({|})/g, function(match, ac){
             return '\\'+ac;
             }).replace(/_(SUSP|STOP)\s*\(([ptu][0-9]*[_]*)\)/g, function(match, st, t){
-            return '\\overset{'+(st=='STOP'?'●':'○')+'}{'+t+'}';
+            return '\\overset{'+(st=='STOP'?'●':'○')+'}{\\color{'+(st=='STOP'?'red':'blue')+'}{'+t+'}}'
           }).replace(/(TERM|STOP|SUSP)\((.*)\)/,function(match, st, te_){
           te_=te_.replace('∪', '~\\cup~');          
           return (act?('~'+st+'~}'+te_):te_.substr(0, te_.lastIndexOf(',')));

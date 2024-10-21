@@ -10,6 +10,10 @@ MathJax.Hub.Config({
       inlineMath: [["\$","\$"],["\\\\(","\\\\)"]]
       }
   }); 
+//window.MathJax = {
+//  loader: {load: ['[tex]/color']},
+//  tex: {packages: {'[+]': ['color']}}
+//};
   </script>
  </head>
  <body>
@@ -58,7 +62,7 @@ La syntaxe concrète regroupe les constructions permettant de construire des ter
 <h2>Syntaxe abstraite</h2>
 La syntaxe abstraite regroupe les constructions permettant les termes à exécuter :
 <ul>
-<li> $Par(l)$ permet de construire un $Par$ avec une liste de branches à exécuter. Chaque branche de la liste est encapsulée par un marqueur indiquant si la branche est activable ($\_SUSP(b)$), Pour «alléger» la notation des status on va remplacer dans le format des règle le status $\_STOP(t)$ par une annotation au dessus du terme $t$ : $\overset{●}{t}$ qui signifie : « le terme $t$ n'est pas activable » et le status $\_SUSP(t)$ par une annotation au dessus du terme $t$ : $\overset{○}{t}$ qui signifie « le tereme $t$ est activable »
+<li> $Par(l)$ permet de construire un $Par$ avec une liste de branches à exécuter. Chaque branche de la liste est encapsulée par un marqueur indiquant si la branche est activable ($\_SUSP(b)$), Pour «alléger» la notation des status on va remplacer dans le format des règle le status $\_STOP(t)$ par une annotation au dessus du terme $t$ : $\overset{●}{\color{red}{t}}$ qui signifie : « le terme $t$ n'est pas activable » et le status $\_SUSP(t)$ par une annotation au dessus du terme $t$ : $\overset{○}{\color{blue}{t}}$ qui signifie « le tereme $t$ est activable »
 <li> $Seq(l)$ permet de construire une séquence avec une liste de terme (à exécuter en séquence)
 <li> $Nothing()$ permet de construire un $Nothing$ terme qui ne fait rien et termine immédiatement
 <li> $Stop()$ permet de construire un $Stop$
