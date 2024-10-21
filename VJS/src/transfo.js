@@ -222,8 +222,9 @@ fs.readFile('semantics.js', 'utf8', function(err, data){
               });
             // Transformation des hypothèses sur le status de la tête d'une
             // liste (pour la séquence ou le par essentiellement)
+            const original_hyp= rule.hyp[idx];
             rule.hyp[idx]=rule.hyp[idx].replace(/\s*head\s*\((.+)\)\s*=\s*_(SUSP|STOP)\((.+)\)/, function(match, list, s, p){
-              return `const ${p}=List_isHead${s}(${list});`;
+              return `const ${p}=List_isHead${s}(${list}) //-- _List_isHead${s}(${list})`;
               });
             // Transformation de l'hypthèse sur la liste vide.
             rule.hyp[idx]=rule.hyp[idx].replace(/\s*(\w+)\s*([=≠])\s*nil\s*/, function(match, list, op){
@@ -393,7 +394,7 @@ ${op}.prototype.toMath= function(){
         if(match(${act_nm}, '${rwr[1]}')){/*console.warn("subrule:", ${act_nm});*/`);
             // Si oui on extrait du résultat les noms des nouvelles variables
             // éventuellement produites par la réécriture.
-            console.log(`        const {${syn_extract(rwr[1])}}=${act_nm};`);
+            console.log(`        const {${syn_extract(rwr[1])}}= ${act_nm};`);
             if('proof'==mode){
               // Si on construit l'arbre de preuve, on rajoute à la liste des
               // hypthèses de la preuve.
@@ -411,7 +412,9 @@ ${op}.prototype.toMath= function(){
               // Si on construit l'arbre de preuve, on rajoute à la liste des
               // hypthèses de la preuve.
               //console.log(`        console.warn("create new predicate test", '${h}', 'p=', '${p}');`);
-              console.log(`        proof_hyps.push(new PredicateJax('${h}'));`);
+	      const zePredicate= h.replace(/^.*\/\/-- /,'');
+	      console.warn("predicate", h, 'becomes', zePredicate);
+              console.log(`        proof_hyps.push(new PredicateJax(${zePredicate}));`);
               }
             }
           // hypthèse simple d'équivalence des ensembles
@@ -470,56 +473,87 @@ ${op}.prototype.toMath= function(){
   
   console.log(`
   function eoi(term, E){
-    //console.log(">>eoi", term,E);
+    //console.log(">>eoi", term,E);`);
+    if('proof'==mode){
+      console.log(`  var proof_hyps= []; proof_last= null;`);
+      }
+    console.log(`
     switch(term.nm){`);
     for(var nm of Object.keys(operators)){
-      const op=operators[nm];
-      const rules=op.eoi;
+      const op= operators[nm];
+      const rules= op.eoi;
       console.log(`    case '${nm}':{`);
       if(op.syntax!=""){
         console.log(`      const { a0: ${op.syntax}}= term;`);
         }
-      var nb=0;
+      var nb= 0;
       for(var r of rules){
-        const hyps=r.hyp;
-        const conc=r.conc;
+        const hyps= r.hyp;
+        const conc= r.conc;
         console.log(`/*
   ${hyps}
   -------------------
   ${conc}
   */`);
+        if('proof'==mode){
+          console.log(`      proof_hyps=[];/* proof_last=null;*/`);
+          }
         for(var h of hyps){
           if(/\s*->\s*/.test(h)){
-            const rwr=h.split(/\s*->\s*/g);
-            const act_nm=`act_${nb++}`;
-            console.log(`      const ${act_nm}=${rwr[0]};
+            const rwr= h.split(/\s*->\s*/g);
+            const act_nm= `act_${nb++}`;
+            console.log(`      const ${act_nm}= ${rwr[0]};
         if(match(${act_nm}, '${rwr[1]}')){`);
-            console.log(`        const {${syn_extract(rwr[1])}}=${act_nm};`);
+            console.log(`        const {${syn_extract(rwr[1])}}= ${act_nm};`);
+            if('proof'==mode){
+              // Si on construit l'arbre de preuve, on rajoute à la liste des
+              // hypthèses de la preuve.
+              console.log(`        proof_hyps.push(proof_last);`);
+              }
             }
           else if(h.startsWith('const') && /(=)/.test(h)){
-            const p=h.substring(6, h.indexOf("="));
+            const p= h.substring(6, h.indexOf("="));
             console.log(`      ${h}
         if(${p}){`);
+            if('proof'==mode){
+	      const zePredicate= h.replace(/^.*\/\/-- /,'');
+	      console.warn("predicate", h, 'becomes', zePredicate);
+              console.log(`        proof_hyps.push(new PredicateJax(${zePredicate}));`);
+              }
             }
           else if(/(=)/.test(h)){
             const rwr=h.split(/\s*=\s*/g);
             console.log(`      if(Set_eq(${rwr[0]}, ${rwr[1]})){`);
+            if('proof'==mode){
+              console.log(`        proof_hyps.push(new PredicateJax(_Set_eq(${rwr[0]}, ${rwr[1]})));`);
+              }
             }
           else if(/(≠)/.test(h)){
             const rwr=h.split(/\s*≠\s*/g);
             console.log(`      if(Set_neq(${rwr[0]}, ${rwr[1]})){`);
+            if('proof'==mode){
+              console.log(`        proof_hyps.push(new PredicateJax(_Set_neq(${rwr[0]}, ${rwr[1]})));`);
+              }
             }
           else{
             console.log(`      if(${h}){`);
+            if('proof'==mode){
+              console.log(`        proof_hyps.push(new PredicateJax(_${h}));`);
+              }
             }
           }
+        console.log(`        var rule_res=${rule_transform(conc[1])};`);
+        if('proof'==mode){
+          console.log(`        const zeRuleJax= new RuleJax({ str: \`\${Set_toMath(E)}  \\\\vdash ~ \${term.toMath()} \\\\longmapsto \${rule_res.t.toMath()}\` });`);
+          console.log(`        proof_last= new NodeJax(proof_hyps, zeRuleJax)`);
+          }
         console.log(`/*console.log('${hyps}\\n-----------\\n${conc}');*/
-          return ${rule_transform(conc[1])};`);
+          return rule_res;`);
         for(var h of hyps){
           console.log(`        }`);
           }
         }
-      console.log(`      throw new Error("No rule for that term");
+      console.log(`      throw new Error("No rule for that term: "+term);
         }`);
       }
     //console.log('eoi:', eoi_cases);

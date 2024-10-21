@@ -173,6 +173,12 @@ function List_toMath(l){
     }
   return res+']';
   }
+function _List_isHeadSUSP(l){
+  return `head(${List_toMath(l)})=\\overset{○}{${l[0].t.toMath()}}`;
+  }
+function _List_isHeadSTOP(l){
+  return `head(${List_toMath(l)})=\\overset{●}{${l[0].t.toMath()}}`;
+  }
 function List_isHeadSUSP(l){
   if(l[0] instanceof _SUSP){
     return l[0].t;
@@ -297,7 +303,7 @@ function STOP(t, E){
   this.nm= 'STOP';
   this.t= t;
   this.E= E;
-  }
+  };
 function TERM(t, E){
   if(!(this instanceof TERM)){
     return new TERM(t, E);
