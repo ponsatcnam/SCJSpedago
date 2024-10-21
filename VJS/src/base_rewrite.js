@@ -162,10 +162,10 @@ function List_toMath(l){
     const e= l[idx];
     res+= (0!=idx?', ':'');
     if(e.nm=="_SUSP"){
-      res+= `\\overset{○}{\color{blue}{${e.t.toMath()}}}`;
+      res+= `\\overset{~}{\\color{blue}{${e.t.toMath()}}}`;
       }
     else if(e.nm=="_STOP"){
-      res+= `\\overset{●}{\color{red}{${e.t.toMath()}}}`;
+      res+= `\\overset{✋}{\\color{red}{${e.t.toMath()}}}`;
       }
     else{
       res+= e.toMath();
@@ -174,10 +174,10 @@ function List_toMath(l){
   return res+']';
   }
 function _List_isHeadSUSP(l){
-  return `head(${List_toMath(l)})=\\overset{○}{\\color{blue}{${l[0].t.toMath()}}}`;
+  return `head(${List_toMath(l)})=\\overset{~}{\\color{blue}{${l[0].t.toMath()}}}`;
   }
 function _List_isHeadSTOP(l){
-  return `head(${List_toMath(l)})=\\overset{●}{\\color{red}{${l[0].t.toMath()}}}`;
+  return `head(${List_toMath(l)})=\\overset{✋}{\\color{red}{${l[0].t.toMath()}}}`;
   }
 function List_isHeadSUSP(l){
   if(l[0] instanceof _SUSP){
