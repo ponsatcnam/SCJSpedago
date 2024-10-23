@@ -204,11 +204,12 @@ fs.readFile('semantics.js', 'utf8', function(err, data){
       // Si on trouve une telle ligne, la ligne d'avant contient les hypothèses
       // la ligne d'après la règle de réécriture.
       // On nettoie les espaces autour..
+      const ruleName= lignes[i].replace(/\s*-*\s*/,"").trim();
       const hyp=lignes[i-1].trim();
       const conc=lignes[i+1].trim();
       // on split les hypothèses sur les ';'
       // et la règle de réécriture sur la flèche '->'
-      const rule={ hyp: hyp.split(/\s*;\s*/g), conc: conc.split(/\s*->\s*/g) };
+      const rule={ hyp: hyp.split(/\s*;\s*/g), conc: conc.split(/\s*->\s*/g), name: ruleName};
       // On transforme dès maintenant ceraines hypothèses pour la génération de
       // code et des arbres de preuve.
       switch(mode){
@@ -265,7 +266,7 @@ fs.readFile('semantics.js', 'utf8', function(err, data){
     if(mode=='proof'){
       console.log(`  const predicates=[proof_last];
   const rule=new RuleJax({ str: \`\${p.toMath()} \\\\require{mathtools}\\\\Rrightarrow \${t.toMath()}, \${Set_toMath(E)}\` });
-  console.log(new NodeJax(predicates, rule).toMath());`);
+  console.log(new NodeJax(predicates, rule, "react").toMath());`);
       }
     if(mode=='imp'){
       console.log(
@@ -279,10 +280,10 @@ function instant(p, E){`);
     if(mode=='proof'){
       console.log(`  const predicates=[proof_last];
   const rule=new RuleJax({ str: \`\${p.toMath()}, \${Set_toMath(E)} \\\\require{mathtools}\\\\Rightarrow \${res.toMath()}, \${Set_toMath(out)}\` });
-  proof_last= NodeJax(predicates, rule);`);
+  proof_last= NodeJax(predicates, rule, "instant"+nm);`);
       }
     console.log(
-`  return {t: res, E: out, end: nm=="TERM"};
+`console.warn("ON PASSE PAR LÀ");  return {t: res, E: out, end: nm=="TERM"};
   }
 var proof_last= null;
 `);
@@ -453,8 +454,8 @@ ${op}.prototype.toMath= function(){
         // rule_res.
         console.log(`        var rule_res=${rule_transform(conc[1])};`);
         if('proof'==mode){
-          console.log(`        const zeRuleJax= new RuleJax({ str: \`\${term.toMath()}, \${Set_toMath(E)} \\\\require{mathtools}\\\\xrightarrow{~${conc[1].substr(0,4)}~} \${rule_res.t.toMath()}, \${Set_toMath(rule_res.E)}\` });`);
-          console.log(`        proof_last= new NodeJax(proof_hyps, zeRuleJax)`);
+          console.log(`        const zeRuleJax= new RuleJax({ str: \`\${term.toMath()}, \${Set_toMath(E)} \\\\require{mathtools}\\\\xrightarrow{~${conc[1].substr(0,4)}~} \${rule_res.t.toMath()}, \${Set_toMath(rule_res.E)}\`, name:  '${r.name}' });`);
+          console.log(`        proof_last= new NodeJax(proof_hyps, zeRuleJax, '${r.name}')`);
           //console.log(`        console.warn("-->", proof_last.toMath(), "=> ", zeRuleJax.toMath());`);
           }
         console.log(`/*console.warn('${hyps}\\n-----------\\n${conc}');*/
@@ -545,7 +546,7 @@ ${op}.prototype.toMath= function(){
         console.log(`        var rule_res=${rule_transform(conc[1])};`);
         if('proof'==mode){
           console.log(`        const zeRuleJax= new RuleJax({ str: \`\${Set_toMath(E)}  \\\\vdash ~ \${term.toMath()} \\\\longmapsto \${rule_res.t.toMath()}\` });`);
-          console.log(`        proof_last= new NodeJax(proof_hyps, zeRuleJax)`);
+          console.log(`        proof_last= new NodeJax(proof_hyps, zeRuleJax, '${r.name}')`);
           }
         console.log(`/*console.log('${hyps}\\n-----------\\n${conc}');*/
           return rule_res;`);
@@ -648,7 +649,7 @@ ${op}.prototype.toMath= function(){
         if(1==hyps.length && hyps[0].trim()=='true'){
         }
         else{
-          ruleText+='\\frac{';
+          ruleText+=`\\textbf{'${r.name}'}\\frac{`;
           var predicats='';
           for(var idx in hyps){
             let h=hyps[idx];

@@ -86,22 +86,23 @@ PredicateJax.prototype.toString=function(){
 /* ** NodeJax **
 Un nœud complet avec des prédicas et une règle.
 */
-function NodeJax(predicates, rule){
+function NodeJax(predicates, rule, name){
   if(!(this instanceof NodeJax)){
-    return new NodeJax(predicates,  rule);
+    return new NodeJax(predicates,  rule, name);
     }
   this.predicates= predicates;
   this.rule= rule;
+  this.name= name;
   };
 NodeJax.prototype.toMath= function(){
     let res= '';
     if(1==this.predicates.length
         && "true"==this.predicates[0].toMath()
         ){
-      res= this.rule.toMath();
+      res= '\\textbf{'+this.name+' : }'+this.rule.toMath();
       }
     else{
-      res= '\\frac{';
+      res= '\\textbf{'+this.name+' : }'+'\\frac{';
       for(var i in this.predicates){
         const p= this.predicates[i];
         res+= (0!=i)?'\\hspace{1cm}':'';

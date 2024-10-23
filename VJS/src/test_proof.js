@@ -90,6 +90,16 @@ for(var n=1; n<2; n++){
   console.log("$$");
   }
 
+console.log(`<h3>Exécution du programme Par(Generate("e"), Await("e"))</h3>
+Instant 1 :\$\$`);
+var term=SC.react(SC.Par(SC.Generate("e"), SC.Await("e")));
+console.log("$$");
+for(var n=2; n<2; n++){
+  console.log(`Instant ${n}:\$\$`);
+  term=SC.react(term);
+  console.log("$$");
+  }
+
 if('alone'==mode){
   console.log(` </body>
 </html>`);
