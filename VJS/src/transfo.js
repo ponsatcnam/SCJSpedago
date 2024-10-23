@@ -280,7 +280,7 @@ function instant(p, E){`);
     if(mode=='proof'){
       console.log(`  const predicates=[proof_last];
   const rule=new RuleJax({ str: \`\${p.toMath()}, \${Set_toMath(E)} \\\\require{mathtools}\\\\Rightarrow \${res.toMath()}, \${Set_toMath(out)}\` });
-  proof_last= NodeJax(predicates, rule, "instant"+nm);`);
+  proof_last= NodeJax(predicates, rule, "instant-"+nm);`);
       }
     console.log(
 `console.warn("ON PASSE PAR LÀ");  return {t: res, E: out, end: nm=="TERM"};
@@ -647,9 +647,10 @@ ${op}.prototype.toMath= function(){
         const conc=r.conc;
         var ruleText='<li>$$ ';
         if(1==hyps.length && hyps[0].trim()=='true'){
+	  ruleText+=`\\textbf{${r.name} : }`;
         }
         else{
-          ruleText+=`\\textbf{'${r.name}'}\\frac{`;
+          ruleText+=`\\textbf{${r.name} : }\\frac{`;
           var predicats='';
           for(var idx in hyps){
             let h=hyps[idx];

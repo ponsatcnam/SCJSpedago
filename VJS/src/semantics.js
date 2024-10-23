@@ -91,31 +91,31 @@ instant(t,⌀) -> u
   react(t) -> u
 
  activ(Close(t), E) -> TERM(Nothing(), E_)
----------------------------------------  instantTerm
+---------------------------------------  instant-TERM
        instant(t,E) -> Nothing()
 
  activ(Close(t), E) -> STOP(t_, E_)
---------------------------------------- instantStop
+--------------------------------------- instant-STOP
        instant(t,E) -> t_
 
      activ(t, E) -> TERM(t_, E_)
------------------------------------------ closeTerm
+----------------------------------------- close-TERM
  activ(Close(t), E) -> TERM(Nothing(), E_)
 
  activ(t, E) -> SUSP(t_, E_) ; E=E_ ; eoi(t_, E) -> STOP(t__, E)
----------------------------------------------------------------- closeSUSP_EOI
+---------------------------------------------------------------- close-SUSP-EOI
         activ(Close(t), E) -> STOP(t__, E)
 
 activ(t, E) -> SUSP(t_, E_) ; E≠E_ ; activ(Close(t_), E_) -> STOP(t__, E__)
---------------------------------------------------------------------------- closeSUSP_STOP
+--------------------------------------------------------------------------- close-SUSP-STOP
         activ(Close(t), E) -> STOP(t__, E__)
 
 activ(t, E) -> SUSP(t_, E_) ; E≠E_ ; activ(Close(t_), E_) -> TERM(t__, E__)
---------------------------------------------------------------------------- closeSUSP_TERM
+--------------------------------------------------------------------------- close-SUSP-TERM
         activ(Close(t), E) -> TERM(Nothing(), E__)
 
     activ(t, E) -> STOP(t_, E_)
------------------------------------- closeSTOP
+------------------------------------ close-STOP
  activ(Close(t), E) -> STOP(t_, E_)
 
 */
@@ -179,23 +179,23 @@ class Seq extends Instruction {
 /*
 
       l≠nil ; activ(head(l),E)->SUSP(t_,E_)
------------------------------------------------------- seq_SUSP
+------------------------------------------------------ seq-SUSP
  activ(Seq(l), E) -> SUSP(Seq(cons(t_, tail(l))), E_)
 
       l≠nil ; activ(head(l),E)->STOP(t_,E_)
------------------------------------------------------- seq_STOP
+------------------------------------------------------ seq-STOP
  activ(Seq(l), E) -> STOP(Seq(cons(t_, tail(l))), E_)
 
  l≠nil ; activ(head(l),E)->TERM(Nothing(), E_) ; activ(Seq(tail(l)), E_) -> SUSP(u, E__)
------------------------------------------------------------------------------------------ seq_TERM_SUSP
+----------------------------------------------------------------------------------------- seq-TERM-SUSP
                       activ(Seq(l), E) -> SUSP(u, E__)
 
  l≠nil ; activ(head(l),E)->TERM(Nothing(), E_) ; activ(Seq(tail(l)), E_) -> STOP(u, E__)
------------------------------------------------------------------------------------------ seq_TERM_STOP
+----------------------------------------------------------------------------------------- seq-TERM-STOP
                       activ(Seq(l), E) -> STOP(u, E__)
 
  l≠nil ; activ(head(l),E)->TERM(Nothing(), E_) ; activ(Seq(tail(l)), E_) -> TERM(u, E__)
------------------------------------------------------------------------------------------ seq_TERM_TERM
+----------------------------------------------------------------------------------------- seq-TERM-TERM
                       activ(Seq(l), E) -> TERM(Nothing(), E__)
 
                   l=nil
@@ -207,7 +207,7 @@ On doit pouvoir déconditionnaliser tout de suite car forcément l DOIT être di
 C'est défensif...
 
        l≠nil ; eoi(head(l), E) -> STOP(l_, E)
----------------------------------------------------- seq_EOI
+---------------------------------------------------- seq-EOI
   eoi(Seq(l), E) -> STOP(Seq(cons(l_, tail(l))), E)
 */
 
@@ -265,79 +265,79 @@ class Merge extends Instruction {
  activ(Par(l), E) -> TERM(Nothing(), E)
 
  l≠nil ; head(l)=_SUSP(p) ; activ(p,E) -> SUSP(p_,E_) ; activ(Par(tail(l)), E_) -> TERM(Nothing(), E__)
----------------------------------------------------------------------------------------------------------------- par_HSUSP_SUSP_TERM
+---------------------------------------------------------------------------------------------------------------- par-HSUSP-SUSP-TERM
            activ(Par(l), E) -> SUSP(Par([_SUSP(p_)]), E__)
 
  l≠nil ; head(l)=_SUSP(p) ; activ(p,E) -> STOP(p_,E_) ; activ(Par(tail(l)), E_) -> TERM(Nothing(), E__)
----------------------------------------------------------------------------------------------------------------- par_HSUSP_STOP_TERM
+---------------------------------------------------------------------------------------------------------------- par-HSUSP-STOP-TERM
            activ(Par(l), E) -> STOP(Par([_STOP(p_)]), E__)
 
  l≠nil ; head(l)=_SUSP(p) ; activ(p,E) -> TERM(Nothing(),E_) ; activ(Par(tail(l)), E_) -> TERM(Nothing(), E__)
------------------------------------------------------------------------------------------------------------------------ par_HSUSP_TERM_TERM
+----------------------------------------------------------------------------------------------------------------------- par-HSUSP-TERM-TERM
            activ(Par(l), E) -> TERM(Nothing(), E__)
 
  l≠nil ; head(l)=_SUSP(p) ; activ(p,E) -> TERM(Nothing(),E_) ; activ(Par(tail(l)), E_) -> STOP(Par(l_), E__)
---------------------------------------------------------------------------------------------------------------- par_HSUSP_TERM_STOP
+--------------------------------------------------------------------------------------------------------------- par-HSUSP-TERM-STOP
            activ(Par(l), E) -> STOP(Par(l_), E__)
 
  l≠nil ; head(l)=_SUSP(p) ; activ(p,E) -> STOP(p_,E_) ; activ(Par(tail(l)), E_) -> STOP(Par(l_), E__)
----------------------------------------------------------------------------------------------------------- par_HSUSP_STOP_STOP
+---------------------------------------------------------------------------------------------------------- par-HSUSP-STOP-STOP
            activ(Par(l), E) -> STOP(Par(cons(_STOP(p_), l_)), E__)
 
  l≠nil ; head(l)=_SUSP(p) ; activ(p,E) -> SUSP(p_,E_) ; activ(Par(tail(l)), E_) -> STOP(Par(l_), E__)
----------------------------------------------------------------------------------------------------------- par_HSUSP_SUSP_STOP
+---------------------------------------------------------------------------------------------------------- par-HSUSP-SUSP-STOP
            activ(Par(l), E) -> SUSP(Par(cons(_SUSP(p_), l_)), E__)
 
  l≠nil ; head(l)=_SUSP(p) ; activ(p,E) -> SUSP(p_,E_) ; activ(Par(tail(l)), E_) -> SUSP(Par(l_), E__)
----------------------------------------------------------------------------------------------------------- par_HSUSP_SUSP_SUSP
+---------------------------------------------------------------------------------------------------------- par-HSUSP-SUSP-SUSP
            activ(Par(l), E) -> SUSP(Par(cons(_SUSP(p_), l_)), E__)
 
  l≠nil ; head(l)=_SUSP(p) ; activ(p,E) -> STOP(p_,E_) ; activ(Par(tail(l)), E_) -> SUSP(Par(l_), E__)
----------------------------------------------------------------------------------------------------------- par_HSUSP_STOP_SUSP
+---------------------------------------------------------------------------------------------------------- par-HSUSP-STOP-SUSP
            activ(Par(l), E) -> SUSP(Par(cons(_STOP(p_), l_)), E__)
 
  l≠nil ; head(l)=_SUSP(p) ; activ(p,E) -> TERM(Nothing(),E_) ; activ(Par(tail(l)), E_) -> SUSP(Par(l_), E__)
---------------------------------------------------------------------------------------------------------------- par_HSUSP_TERM_SUSP
+--------------------------------------------------------------------------------------------------------------- par-HSUSP-TERM-SUSP
            activ(Par(l), E) -> SUSP(Par(l_), E__)
 
  l≠nil ; head(l)=_STOP(p) ; activ(Par(tail(l)), E) -> SUSP(Par(l_), E_)
----------------------------------------------------------------------------- par_HSTOP_SUSP
+---------------------------------------------------------------------------- par-HSTOP-SUSP
            activ(Par(l), E) -> SUSP(Par(cons(_STOP(p),l_)), E_)
 
  l≠nil ; head(l)=_STOP(p) ; activ(Par(tail(l)), E) -> STOP(Par(l_), E_)
----------------------------------------------------------------------------- par_HSTOP_STOP
+---------------------------------------------------------------------------- par-HSTOP-STOP
            activ(Par(l), E) -> STOP(Par(cons(_STOP(p),l_)), E_)
 
  l≠nil ; head(l)=_STOP(p) ; activ(Par(tail(l)), E) -> TERM(Par(l_), E_)
----------------------------------------------------------------------------- par_HSTOP_TERM
+---------------------------------------------------------------------------- par-HSTOP-TERM
            activ(Par(l), E) -> STOP(Par(cons(_STOP(p), nil)), E_)
 
  l≠nil ; head(l)=_SUSP(p) ; eoi(p, E) -> STOP(p_, E) ; eoi(Par(tail(l)), E) -> STOP(Par(l_), E)
------------------------------------------------------------------------------------------------- par_EOI_HSUSP
+------------------------------------------------------------------------------------------------ par-EOI-HSUSP
            eoi(Par(l), E) -> STOP(Par(cons(_SUSP(p_), l_)), E)
 
  l≠nil ; head(l)=_STOP(p) ; eoi(Par(tail(l)), E) -> STOP(Par(l_), E)
---------------------------------------------------------------------- par_EOI_HSTOP
+--------------------------------------------------------------------- par-EOI-HSTOP
        eoi(Par(l), E) -> STOP(Par(cons(_SUSP(p), l_)), E)
 
               l=nil
-------------------------------------- par_EOI_NIL
+------------------------------------- par-EOI-NIL
  eoi(Par(l), E) -> STOP(Par(nil), E)
 
          activ(t, E) -> SUSP(t_, E_)
--------------------------------------------------- closepar_SUSP
+-------------------------------------------------- closepar-SUSP
  activ(ClosePar(t), E) ->  SUSP(ClosePar(t_), E_)
 
         activ(t, E) -> TERM(t_, E_)
----------------------------------------------- closepar_TERM
+---------------------------------------------- closepar-TERM
  activ(ClosePar(t), E) ->  TERM(Nothing(), E_)
 
  activ(t, E) -> STOP(t_, E_) ; eoi(t_, E_) -> STOP(t__, E__)
-------------------------------------------------------------- closepar_STOP
+------------------------------------------------------------- closepar-STOP
      activ(ClosePar(t), E) ->  STOP(ClosePar(t__), E__)
 
           eoi(t, E) -> STOP(t_, E)
------------------------------------------------ closepar_EOI
+----------------------------------------------- closepar-EOI
  eoi(ClosePar(t), E) ->  STOP(ClosePar(t_), E)
 
 */
@@ -392,11 +392,11 @@ class Loop extends Instruction {
 /*
 
  activ(Seq(cons(p,[Stop()])), E) -> SUSP(Seq(cons(p_, [Stop()])), E_)
------------------------------------------------------------------- loop_SUSP
+------------------------------------------------------------------ loop-SUSP
   activ(Loop(p), E) -> SUSP(Seq(cons(p_, [Stop(), Loop(p)])), E_)
 
     activ(Seq(cons(p,[Stop()])), E) -> STOP(u, E_)
--------------------------------------------------------- loop_STOP
+-------------------------------------------------------- loop-STOP
  activ(Loop(p), E) -> STOP(Seq(cons(u, [Loop(p)])), E_)
 
 */
@@ -504,15 +504,15 @@ class Await extends Instruction {
 /*
 
                 nom ∈ E 
------------------------------------------- await_TERM
+------------------------------------------ await-TERM
  activ(Await(nom), E) -> TERM(Nothing(), E)
 
                   nom ∉ E 
--------------------------------------------- await_SUSP
+-------------------------------------------- await-SUSP
  activ(Await(nom), E) -> SUSP(Await(nom), E)
 
                    true
-------------------------------------------- await_EOI
+------------------------------------------- await-EOI
  eoi(Await(nom), E) -> STOP(Await(nom), E)
 
 */

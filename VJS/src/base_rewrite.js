@@ -88,7 +88,7 @@ Un nœud complet avec des prédicas et une règle.
 */
 function NodeJax(predicates, rule, name){
   if(!(this instanceof NodeJax)){
-    return new NodeJax(predicates,  rule, name);
+    return new NodeJax(predicates, rule, name);
     }
   this.predicates= predicates;
   this.rule= rule;
