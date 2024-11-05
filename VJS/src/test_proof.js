@@ -100,6 +100,22 @@ for(var n=2; n<2; n++){
   console.log("$$");
   }
 
+console.log(`<h3>Exécution du programme Par(Await("e")) avec addProgram(Generate("e"))</h3>
+Instant 1 :\$\$`);
+var term=SC.react(SC.Clock(SC.Par(SC.Await("e"))));
+console.log("$$");
+for(var n=2; n<2; n++){
+  console.log(`Instant ${n}:\$\$`);
+  term=SC.react(term);
+  console.log("$$");
+  }
+term= SC.addProgram(term, SC.Generate("e"));
+for(var n=1; n<2; n++){
+  console.log(`Instant ${n}:\$\$`);
+  term=SC.react(term);
+  console.log("$$");
+  }
+
 if('alone'==mode){
   console.log(` </body>
 </html>`);

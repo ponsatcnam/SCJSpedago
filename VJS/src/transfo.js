@@ -289,6 +289,12 @@ fs.readFile('semantics.js', 'utf8', function(err, data){
     console.log(
 `  return Machine([], t, E, end);
   }
+function addProgram(machine, p_){
+  if(!(machine instanceof Machine)){
+    throw new Error("invalid machine");
+    }
+  return Machine(List_concat(machine.toAdd, [_SUSP(p_)]), machine.p, machine.E, machine.end);
+  };
 function instant(p, E){`);
     console.log(`  let { nm, t: res, E: out }=activ(new Close(p), E);`);
     if(mode=='proof'){
@@ -641,7 +647,8 @@ ${op}.prototype.toMath= function(){
       console.log("building loop with", list);
       return new Loop(list.length>1?new Seq(list):list[0]);
       },
-    react: react
+    react: react,
+    addProgram: addProgram
     };
   module.exports= {
     SC: SC
