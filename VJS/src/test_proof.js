@@ -32,7 +32,7 @@ MathJax.Hub.Config({
   }
 console.log(`<h3>Exécution du programme Nothing()</h3>
 Instant 1 :\$\$`);
-var term=SC.react(SC.Nothing());
+var term= SC.react(SC.Clock(SC.Nothing()));
 console.log("$$");
 for(var n=2; n<3; n++){
   console.log(`Instant ${n}:\$\$`);
@@ -42,7 +42,7 @@ for(var n=2; n<3; n++){
 
 console.log(`<h3>Exécution du programme Stop()</h3>
 Instant 1 :\$\$`);
-var term=SC.react(SC.Stop());
+var term=SC.react(SC.Clock(SC.Stop()));
 console.log("$$");
 for(var n=2; n<3; n++){
   console.log(`Instant ${n}:\$\$`);
@@ -52,7 +52,7 @@ for(var n=2; n<3; n++){
 
 console.log(`<h3>Exécution du programme Seq(Stop(),Stop())</h3>
 Instant 1 :\$\$`);
-var term=SC.react(SC.Seq(SC.Stop(), SC.Stop()));
+var term=SC.react(SC.Clock(SC.Seq(SC.Stop(), SC.Stop())));
 console.log("$$");
 for(var n=2; n<4; n++){
   console.log(`Instant ${n}:\$\$`);
@@ -62,7 +62,7 @@ for(var n=2; n<4; n++){
 
 console.log(`<h3>Exécution du programme Seq(Generate("e"),Await("e"))</h3>
 Instant 1 :\$\$`);
-var term=SC.react(SC.Seq(SC.Generate("e"), SC.Await("e")));
+var term=SC.react(SC.Clock(SC.Seq(SC.Generate("e"), SC.Await("e"))));
 console.log("$$");
 for(var n=2; n<2; n++){
   console.log(`Instant ${n}:\$\$`);
@@ -72,7 +72,7 @@ for(var n=2; n<2; n++){
 
 console.log(`<h3>Exécution du programme Par(Await("e"),Generate("e"))</h3>
 Instant 1 :\$\$`);
-var term=SC.react(SC.Par(SC.Await("e"), SC.Generate("e")));
+var term=SC.react(SC.Clock(SC.Par(SC.Await("e"), SC.Generate("e"))));
 console.log("$$");
 for(var n=2; n<2; n++){
   console.log(`Instant ${n}:\$\$`);
@@ -82,7 +82,7 @@ for(var n=2; n<2; n++){
 
 console.log(`<h3>Exécution du programme Par(Await("e"),Generate("e"))</h3>
 Instant 1 :\$\$`);
-var term=SC.react(SC.Par(SC.Await("e"), SC.Seq(SC.Stop(), SC.Generate("e"))));
+var term=SC.react(SC.Clock(SC.Par(SC.Await("e"), SC.Seq(SC.Stop(), SC.Generate("e")))));
 console.log("$$");
 for(var n=1; n<2; n++){
   console.log(`Instant ${n}:\$\$`);
@@ -92,7 +92,7 @@ for(var n=1; n<2; n++){
 
 console.log(`<h3>Exécution du programme Par(Generate("e"), Await("e"))</h3>
 Instant 1 :\$\$`);
-var term=SC.react(SC.Par(SC.Generate("e"), SC.Await("e")));
+var term=SC.react(SC.Clock(SC.Par(SC.Generate("e"), SC.Await("e"))));
 console.log("$$");
 for(var n=2; n<2; n++){
   console.log(`Instant ${n}:\$\$`);

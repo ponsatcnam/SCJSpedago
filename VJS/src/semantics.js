@@ -86,9 +86,23 @@ class Machine {
   }
 }
 /*
-instant(t,⌀) -> u
------------------ react
-  react(t) -> u
+
+              true
+------------------------------------ Clock
+ Clock(p) -> Machine([], p, ⌀)
+
+                                 true
+------------------------------------------------------------------------ addProgram
+ addProgram(Machine(l, p, E), p_) -> Machine(consR[l, _SUSP(p_)], p, E)
+
+au cas où ...
+//                              true
+//--------------------------------------------------------------------- addEntry
+// addProgram(Machine(l, p, E), { nom }) -> Machine(l, p, E ∪ { nom })
+
+ instant(ClosePar(Par(concat(t, l))), E) -> u
+---------------------------------------------- react
+ react(Machine(l, p, E)) -> Machine([], u, E)
 
  activ(Close(t), E) -> TERM(Nothing(), E_)
 ---------------------------------------  instant-TERM

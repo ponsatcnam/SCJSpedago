@@ -261,11 +261,25 @@ fs.readFile('semantics.js', 'utf8', function(err, data){
   if(mode=='imp'||mode=='proof'){
     // **** Générateur de code.
     // on commence par écrire ce que fait react.
-    console.log(`function react(p){`);
-    console.log(`  let {t, E, end }= instant(p, {});`);
+    console.log(`function react(machine){
+  if(!(machine instanceof Machine)){
+    throw new Error("invalid term");
+    }
+  let zt;
+  if(machine.p instanceof(ClosePar)){
+    zt= ClosePar(Par(List_concat(machine.p.a0.a0, machine.toAdd)));
+    }
+  else if(machine.p){
+    zt= ClosePar(Par(List_concat([_SUSP(machine.p)], machine.toAdd)));
+    }
+  else{
+    zt= ClosePar(Par(List_concat(ztl, machine.toAdd)));
+    }
+  `);
+    console.log(`  let {t, E, end }= instant(zt, machine.E);`);
     if(mode=='proof'){
       console.log(`  const predicates=[proof_last];
-  const rule=new RuleJax({ str: \`\${p.toMath()} \\\\require{mathtools}\\\\Rrightarrow \${t.toMath()}, \${Set_toMath(E)}\` });
+  const rule=new RuleJax({ str: \`\${machine.toMath()} \\\\require{mathtools}\\\\Rrightarrow \${t.toMath()}, \${Set_toMath(E)}\` });
   console.log(new NodeJax(predicates, rule, "react").toMath());`);
       }
     if(mode=='imp'){
@@ -273,7 +287,7 @@ fs.readFile('semantics.js', 'utf8', function(err, data){
 `  console.error(' ==> ', end?'fini':'pas fini', ':', t, 'in', E);`);
       }
     console.log(
-`  return t;
+`  return Machine([], t, E, end);
   }
 function instant(p, E){`);
     console.log(`  let { nm, t: res, E: out }=activ(new Close(p), E);`);
@@ -283,7 +297,7 @@ function instant(p, E){`);
   proof_last= NodeJax(predicates, rule, "instant-"+nm);`);
       }
     console.log(
-`console.warn("ON PASSE PAR LÀ");  return {t: res, E: out, end: nm=="TERM"};
+`/*console.warn("ON PASSE PAR LÀ");*/  return {t: res, E: out, end: nm=="TERM"};
   }
 var proof_last= null;
 `);
@@ -587,6 +601,9 @@ ${op}.prototype.toMath= function(){
   */
   
   const SC= {
+    Clock: function(term){
+        return new Machine([], term, {});
+        },
     Seq: function(...args){
       let list=[];
       for(var elt of args){

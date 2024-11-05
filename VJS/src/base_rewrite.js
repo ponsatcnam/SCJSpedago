@@ -157,6 +157,19 @@ function cons(head, tail){
     }
   return res;
   };
+function List_concat(l, l_){
+  let res= [];
+  var n= 1;
+  while(l){
+    //console.error("## CONCAT", l);
+    for(var i=0; i<l.length; i++){
+      res.push(l[i]);
+      }
+    l= arguments[n++];
+    };
+  //console.error("##>> CONCAT=", res);
+  return res;
+  };
 function List_toMath(l){
   var res= '[';
   for(var idx in l){
@@ -212,6 +225,18 @@ Gestion des ensembles (événements/signaux).
 */
 function _Set_eq(E, E_){
   return Set_toMath(E)+"="+Set_toMath(E_);
+  };
+function Set_union(E, E_){
+  let keyE_= Object.keys(E_);
+  let keyE= Object.keys(E);
+  let res= {};
+  for(var elt of keyE){
+    res.elt= true;
+    }
+  for(var elt of keyE_){
+    res.elt= true;
+    }
+  return res;
   };
 function Set_eq(E, E_){
   let keyE_= Object.keys(E_);
@@ -313,6 +338,32 @@ function TERM(t, E){
   this.t= t;
   this.E= E;
   }
+
+/*
+La machine d'exécution.
+*/
+function Machine(l, p, E, end){
+  if(!(this instanceof Machine)){
+    return new Machine(l, p, E, end);
+    }
+  this.nm= 'Machine';
+  this.toAdd= l;
+  this.p= p;
+  this.E= E;
+  this.end= end;
+  }
+
+Machine.prototype.toString= function(){
+    return this.toMath();
+    };
+// Pour chaque operateur on rajoute sa production en format latex...
+Machine.prototype.toMath= function(){
+    if(this.end){
+      return "Nothing";
+      }
+    let res= this.nm+'('+this.p.toMath();
+    return res+')';
+    };
 
 /*
 Utilitaire d'extraction de l'opérateur en tête.
