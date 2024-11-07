@@ -109,8 +109,11 @@ for(var n=2; n<2; n++){
   term=SC.react(term);
   console.log("$$");
   }
+console.log(`addProgram Generate("e"):\$\$`);
 term= SC.addProgram(term, SC.Generate("e"));
-for(var n=1; n<2; n++){
+console.log("$$");
+
+for(var n=2; n<3; n++){
   console.log(`Instant ${n}:\$\$`);
   term=SC.react(term);
   console.log("$$");

@@ -97,6 +97,22 @@ trad(Par(t_1, t_2...))=Par([\_SUSP(trad(t_1)), \_SUSP(trad(t_2))...])
 $$
 <h2>Les règles de réécritures des termes de la syntaxe concrète</h2>
 
+<h3>Clock: création d'une machine réactive d'exécution</h3>
+<ol>
+<li>
+$$
+ Clock(p) \leadsto Machine([], p, ⌀)
+$$
+</ol>
+
+<h3>addPRogram: ajout d'un programme en parallèle à une machine d'exécution</h3>
+<ol>
+<li>
+$$
+ Machine([], p, ⌀) \overset{p'}{\require{mathtools}\Uparrow}  Machine([\overset{~}{\color{blue}{p'}}], p, ⌀)
+$$
+</ol>
+
 <h3>React: activation d'un instant d'un terme</h3>
 <ol>
 <li>

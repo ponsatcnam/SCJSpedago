@@ -361,7 +361,10 @@ Machine.prototype.toMath= function(){
     if(this.end){
       return "Nothing";
       }
-    let res= this.nm+'('+this.p.toMath();
+    //let res= this.nm+'(\\color{green}{toAdd}:'+List_toMath(this.toAdd)+', \\color{green}{p}:'+this.p.toMath()
+    let res= this.nm+'('+List_toMath(this.toAdd)+', '+this.p.toMath()
+    //res+= ', \\color{green}{E}:'+Set_toMath(this.E);
+    res+= ', '+Set_toMath(this.E);
     return res+')';
     };
 

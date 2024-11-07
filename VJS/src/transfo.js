@@ -293,7 +293,12 @@ function addProgram(machine, p_){
   if(!(machine instanceof Machine)){
     throw new Error("invalid machine");
     }
-  return Machine(List_concat(machine.toAdd, [_SUSP(p_)]), machine.p, machine.E, machine.end);
+  let res= Machine(List_concat(machine.toAdd, [_SUSP(p_)]), machine.p, machine.E, machine.end);`);
+    if(mode=='proof'){
+      console.log(`  const rule=new RuleJax({ str: \`\${machine.toMath()} \\\\overset{\${p_.toMath()}}{\\\\require{mathtools}\\\\Uparrow} \${res.toMath()}\` });
+  console.log(new NodeJax([new PredicateJax("true")], rule, "addProgram").toMath());`);
+      }
+  console.log(`  return res;
   };
 function instant(p, E){`);
     console.log(`  let { nm, t: res, E: out }=activ(new Close(p), E);`);
